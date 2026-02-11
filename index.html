@@ -3,320 +3,470 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SIANA & MEL - FITNESS</title>
+    <title>GLOW UP - Siana & Mel</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        
-        :root { 
-            --bg: #fdf2f4; /* Fond rose très léger mais teinté */
-            --card: #ffffff; 
-            --text: #5e3a42; /* Texte plus foncé pour la lisibilité */
-            --primary: #ff8fa3; /* Rose Siana - Plus vif */
-            --secondary: #ffccd5; /* Rose Mel */
-            --accent: #ff4d6d;
+        :root {
+            --primary: #f9a8d4; /* Pink 300 */
+            --primary-dark: #db2777; /* Pink 600 */
+            --bg-app: #fff1f2; /* Rose 50 */
+            --surface: #ffffff;
+            --shadow: 0 10px 30px -10px rgba(244, 63, 94, 0.15);
+        }
+
+        body.theme-mel {
+            --primary: #c4b5fd; /* Violet 300 */
+            --primary-dark: #7c3aed; /* Violet 600 */
+            --bg-app: #f5f3ff; /* Violet 50 */
         }
 
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text); 
+            font-family: 'Quicksand', sans-serif; 
+            background-color: var(--bg-app); 
+            color: #4a044e; /* Text Dark */
             height: 100dvh; 
-            margin: 0;
             display: flex; 
             flex-direction: column; 
+            transition: background-color 0.5s ease;
         }
-        
-        /* Conteneur principal pour éviter que tout soit "tout blanc" */
-        .glass { background: #ffffff; border-bottom: 2px solid var(--secondary); }
-        
-        .card { 
-            background: white; 
-            border: 1px solid var(--secondary); 
-            border-radius: 20px; 
-            box-shadow: 0 4px 12px rgba(255, 143, 163, 0.15); 
-        }
-        
-        /* Semainier avec plus de contraste */
-        .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .day-bubble {
-            aspect-ratio: 1/1.3; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 12px; font-size: 11px; font-weight: 800; transition: all 0.2s;
-            background: #fff; border: 2px solid var(--secondary);
-            color: var(--text);
-        }
-        .day-selected { 
-            background: var(--primary) !important; 
-            color: white !important; 
-            border-color: var(--accent) !important;
-            transform: scale(1.05); 
-        }
-        
-        .plan-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 4px; }
 
-        input, select { 
-            background: #f8f9fa !important; 
-            border: 2px solid var(--secondary) !important; 
-            color: var(--text) !important; 
-            border-radius: 12px;
-            padding: 12px !important;
+        .safe-area { padding-top: max(env(safe-area-inset-top), 20px); }
+        
+        .card {
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .week-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding: 10px 20px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .week-scroll::-webkit-scrollbar { display: none; }
+
+        .day-pill {
+            min-width: 60px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.6);
+            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: #831843;
         }
         
-        .btn-primary {
-            background: var(--primary);
+        .day-active {
+            background: var(--surface);
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px -5px var(--primary);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            font-weight: 800;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(255, 143, 163, 0.3);
+            box-shadow: 0 4px 15px var(--primary);
         }
 
-        .nav-item { color: #b08d95; font-weight: 700; }
-        .nav-active { color: var(--accent); }
+        /* Animations */
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .anim-item { animation: slideIn 0.4s ease-out forwards; }
+        
+        input, select {
+            background: #fdf2f8;
+            border: 1px solid #fbcfe8;
+            color: #831843;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--primary-dark); background: white; }
+
+        .glass-header {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+        }
     </style>
 </head>
-<body>
+<body class="theme-siana">
 
-    <header class="glass sticky top-0 z-40 pt-12 pb-4 px-6 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex gap-2 p-1 bg-pink-100 rounded-xl">
-                <button onclick="switchUser('siana')" id="btn-siana" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all bg-white shadow-sm text-pink-500">🌸 Siana</button>
-                <button onclick="switchUser('mel')" id="btn-mel" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all opacity-60">🌷 Mel</button>
+    <header class="glass-header sticky top-0 z-50 safe-area pb-2">
+        <div class="px-5 flex justify-between items-center mb-2">
+            <h1 class="text-xl font-bold tracking-tight text-pink-900">GLOW UP ✨</h1>
+            <div class="flex bg-white rounded-full p-1 shadow-sm border border-pink-100">
+                <button onclick="switchUser('siana')" id="btn-siana" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all bg-pink-400 text-white shadow-md">🌸 Siana</button>
+                <button onclick="switchUser('mel')" id="btn-mel" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all text-gray-400">🦋 Mel</button>
             </div>
-            <button onclick="copyLastWeek()" class="text-[10px] font-black text-white bg-pink-400 px-3 py-2 rounded-lg active:scale-95 shadow-md">
-                COPIER J-7 📋
-            </button>
         </div>
         
-        <div class="week-grid" id="week-display">
+        <div class="flex items-center justify-between px-6 mb-2">
+            <button onclick="changeWeek(-1)" class="p-2 opacity-50 hover:opacity-100">❮</button>
+            <div class="text-center">
+                <div class="text-[10px] uppercase font-bold tracking-widest opacity-50">Semaine du</div>
+                <div id="week-display" class="text-sm font-bold text-pink-900">...</div>
+            </div>
+            <button onclick="changeWeek(1)" class="p-2 opacity-50 hover:opacity-100">❯</button>
+        </div>
+
+        <div id="days-container" class="week-scroll">
             </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto p-5 space-y-6 pb-32">
-        
-        <section class="card p-5 border-l-8 border-pink-400">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-[10px] font-black uppercase opacity-60">Séance du <span id="current-date-label">...</span></h2>
-                    <p id="plan-name" class="text-xl font-extrabold text-pink-500">Chargement...</p>
-                </div>
-                <button onclick="openPlanModal()" class="w-12 h-12 rounded-2xl bg-pink-500 text-white flex items-center justify-center font-bold text-2xl shadow-lg">+</button>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-pink-50 p-3 rounded-xl border border-pink-100">
-                    <span class="block text-[9px] uppercase font-black opacity-50">Volume Total</span>
-                    <span id="stat-vol" class="text-lg font-black text-pink-600">0kg</span>
-                </div>
-                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
-                    <span class="block text-[9px] uppercase font-black opacity-50">Exercices</span>
-                    <span id="stat-count" class="text-lg font-black text-blue-600">0</span>
-                </div>
-            </div>
-        </section>
+    <main class="flex-1 overflow-y-auto p-5 pb-32 space-y-6">
 
-        <div id="list-exercises" class="space-y-4">
+        <div class="flex justify-between items-center anim-item">
+            <div>
+                <h2 id="current-day-title" class="text-2xl font-bold text-pink-950">Lundi</h2>
+                <p class="text-xs font-semibold opacity-50" id="current-full-date">12 Février</p>
             </div>
+            <button onclick="copyLastWeek()" class="bg-white border border-pink-200 text-pink-600 px-4 py-2 rounded-xl text-[10px] font-bold uppercase shadow-sm active:scale-95 transition flex items-center gap-2">
+                <span>🔄</span> Copier J-7
+            </button>
+        </div>
 
-        <button onclick="showSportForm()" class="w-full py-5 bg-white border-4 border-dashed border-pink-200 rounded-3xl text-pink-400 font-black text-sm uppercase hover:bg-pink-50 transition">
-            + AJOUTER UN EXERCICE
-        </button>
+        <div id="workout-list" class="space-y-4">
+            <div class="text-center py-10 opacity-40">
+                <div class="text-4xl mb-2">🧘‍♀️</div>
+                <p class="text-sm font-bold">Rien de prévu pour le moment.</p>
+                <p class="text-xs">Ajoute un exercice ou copie la semaine dernière !</p>
+            </div>
+        </div>
+
+        <div class="flex justify-center anim-item">
+            <button onclick="openModal()" class="btn-action w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg transition active:scale-90">
+                ＋
+            </button>
+        </div>
 
     </main>
 
-    <div id="sport-modal" class="fixed inset-0 bg-white z-[100] hidden p-6 overflow-y-auto">
-        <div class="max-w-md mx-auto space-y-6 pt-10">
-            <h3 class="text-2xl font-black text-pink-500 uppercase text-center">Nouvel Exo 🌸</h3>
+    <div id="modal" class="fixed inset-0 bg-pink-900/20 backdrop-blur-sm z-[60] hidden flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl anim-item">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-lg text-pink-900">Nouvel Exercice 💪</h3>
+                <button onclick="closeModal()" class="text-gray-400 text-xl">✕</button>
+            </div>
             
             <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-black uppercase opacity-50 ml-1">Nom de l'exercice</label>
-                    <input type="text" id="m-name" placeholder="ex: Squat, Hip Thrust..." class="w-full font-bold">
-                </div>
+                <input type="text" id="ex-name" placeholder="Nom de l'exo (ex: Hip Thrust)" class="w-full p-4 font-bold text-lg">
                 
-                <div>
-                    <label class="text-xs font-black uppercase opacity-50 ml-1">Type de série</label>
-                    <select id="m-type" class="w-full font-bold" onchange="toggleWeightInputs()">
-                        <option value="Constante">Charge Fixe</option>
-                        <option value="Progressive">Charge Progressive 📈</option>
-                        <option value="Dégressive">Dégressif (Drop Set) 📉</option>
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div id="weight-start-container">
-                        <label class="text-xs font-black uppercase opacity-50 ml-1">Poids (kg)</label>
-                        <input type="number" id="m-weight" class="w-full text-center font-black" placeholder="0">
-                    </div>
-                    <div id="weight-end-container" class="hidden">
-                        <label id="weight-end-label" class="text-xs font-black uppercase opacity-50 ml-1">Poids Fin</label>
-                        <input type="number" id="m-weight-end" class="w-full text-center font-black" placeholder="0">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-gray-400 pl-2">Séries</label>
+                        <input type="number" id="ex-sets" placeholder="4" class="w-full p-3 font-bold text-center">
                     </div>
                     <div>
-                        <label class="text-xs font-black uppercase opacity-50 ml-1">Répétitions</label>
-                        <input type="number" id="m-reps" class="w-full text-center font-black" placeholder="0">
+                        <label class="text-[10px] uppercase font-bold text-gray-400 pl-2">Reps</label>
+                        <input type="number" id="ex-reps" placeholder="12" class="w-full p-3 font-bold text-center">
                     </div>
                 </div>
 
-                <div class="flex gap-3 pt-6">
-                    <button onclick="closeSportModal()" class="flex-1 py-4 font-black uppercase opacity-50">Retour</button>
-                    <button onclick="addSport()" class="flex-1 btn-primary py-4 uppercase">Valider</button>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-400 pl-2 mb-1 block">Type de charge</label>
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        <button type="button" onclick="setType('normal')" id="btn-t-normal" class="py-2 rounded-xl text-[10px] font-bold border border-pink-200 bg-pink-50 text-pink-600">Normal</button>
+                        <button type="button" onclick="setType('progressive')" id="btn-t-progressive" class="py-2 rounded-xl text-[10px] font-bold border border-gray-100 text-gray-400">Progressif 📈</button>
+                        <button type="button" onclick="setType('degressive')" id="btn-t-degressive" class="py-2 rounded-xl text-[10px] font-bold border border-gray-100 text-gray-400">Dégressif 📉</button>
+                    </div>
+
+                    <div id="weight-single" class="relative">
+                        <input type="number" id="ex-w1" placeholder="Poids (kg)" class="w-full p-3 font-bold text-center text-pink-600">
+                        <span class="absolute right-4 top-3 text-xs font-black text-pink-200">KG</span>
+                    </div>
+
+                    <div id="weight-double" class="hidden grid grid-cols-2 gap-3 items-center">
+                        <div class="relative">
+                            <input type="number" id="ex-w-start" placeholder="Début" class="w-full p-3 font-bold text-center text-pink-600">
+                            <span class="absolute right-2 top-3 text-[9px] font-black text-pink-200">KG</span>
+                        </div>
+                        <div class="text-center text-gray-300 font-bold">➔</div>
+                        <div class="relative">
+                            <input type="number" id="ex-w-end" placeholder="Fin" class="w-full p-3 font-bold text-center text-pink-600">
+                            <span class="absolute right-2 top-3 text-[9px] font-black text-pink-200">KG</span>
+                        </div>
+                    </div>
+                    <div id="hint-text" class="text-[10px] text-center text-gray-400 mt-1 h-4">Charge constante</div>
                 </div>
+
+                <button onclick="saveExercise()" class="w-full btn-action py-4 rounded-xl font-bold uppercase text-sm mt-4">Ajouter</button>
             </div>
         </div>
     </div>
-
-    <div id="plan-modal" class="fixed inset-0 bg-pink-500/40 backdrop-blur-md z-[100] hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl border-2 border-pink-200">
-            <h4 class="text-sm font-black uppercase text-center mb-4 text-pink-500">Nom de la séance</h4>
-            <input type="text" id="plan-input" placeholder="ex: Leg Day" class="w-full p-4 mb-4 font-bold text-center border-2 border-pink-100">
-            <div class="flex gap-2">
-                <button onclick="document.getElementById('plan-modal').classList.add('hidden')" class="flex-1 py-3 font-bold opacity-50">Annuler</button>
-                <button onclick="savePlan()" class="flex-1 py-3 btn-primary">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="glass fixed bottom-0 w-full z-50 pb-8 pt-4 border-t-2 border-pink-100">
-        <div class="flex justify-around items-center">
-            <div class="nav-item nav-active flex flex-col items-center">
-                <span class="text-2xl">💪</span>
-                <span class="text-[10px] uppercase">Sport</span>
-            </div>
-            <div class="nav-item flex flex-col items-center opacity-40">
-                <span class="text-2xl">🍱</span>
-                <span class="text-[10px] uppercase">Food</span>
-            </div>
-            <div class="nav-item flex flex-col items-center opacity-40">
-                <span class="text-2xl">✨</span>
-                <span class="text-[10px] uppercase">Moi</span>
-            </div>
-        </div>
-    </nav>
 
     <script>
-        let curUser = 'siana';
-        let db = JSON.parse(localStorage.getItem('fit_siana_mel_v2')) || { 
-            siana: { sport:[], planning:{} }, 
-            mel: { sport:[], planning:{} } 
+        // CONFIG
+        let currentUser = localStorage.getItem('glow_user') || 'siana';
+        let currentType = 'normal'; // normal, progressive, degressive
+        
+        // DATE LOGIC
+        let viewDate = new Date(); // The date we are currently focusing on in the logic
+        let selectedDateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+        // DATABASE
+        let db = JSON.parse(localStorage.getItem('glow_db_v1')) || {
+            siana: {},
+            mel: {}
         };
 
-        let selectedDate = new Date().toISOString().split('T')[0];
+        function saveDB() {
+            localStorage.setItem('glow_db_v1', JSON.stringify(db));
+            localStorage.setItem('glow_user', currentUser);
+        }
 
+        // INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            switchUser(currentUser);
+            // Go to current Monday to start view
+            const today = new Date();
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day == 0 ? -6 : 1); 
+            viewDate.setDate(diff); // Set to Monday of current week
+            
+            // Si on charge la page et qu'on est aujourd'hui, on sélectionne aujourd'hui
+            selectedDateStr = today.toISOString().split('T')[0];
+
+            renderWeek();
+        });
+
+        // USER SWITCH
         function switchUser(u) {
-            curUser = u;
-            document.getElementById('btn-siana').className = u === 'siana' ? 'px-5 py-2 rounded-lg text-xs font-black uppercase transition-all bg-white shadow-sm text-pink-500' : 'px-5 py-2 rounded-lg text-xs font-black uppercase transition-all opacity-60';
-            document.getElementById('btn-mel').className = u === 'mel' ? 'px-5 py-2 rounded-lg text-xs font-black uppercase transition-all bg-white shadow-sm text-pink-500' : 'px-5 py-2 rounded-lg text-xs font-black uppercase transition-all opacity-60';
-            render();
+            currentUser = u;
+            document.body.className = u === 'siana' ? 'theme-siana' : 'theme-mel';
+            
+            // Button Styles
+            const activeClass = u === 'siana' ? 'bg-pink-400 text-white shadow-md' : 'bg-violet-400 text-white shadow-md';
+            const inactiveClass = 'text-gray-400 bg-transparent shadow-none';
+            
+            document.getElementById('btn-siana').className = `px-3 py-1.5 rounded-full text-xs font-bold transition-all ${u === 'siana' ? activeClass : inactiveClass}`;
+            document.getElementById('btn-mel').className = `px-3 py-1.5 rounded-full text-xs font-bold transition-all ${u === 'mel' ? activeClass : inactiveClass}`;
+            
+            renderWorkout();
+        }
+
+        // WEEK LOGIC
+        function changeWeek(direction) {
+            viewDate.setDate(viewDate.getDate() + (direction * 7));
+            renderWeek();
+        }
+
+        function getMonday(d) {
+            d = new Date(d);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day == 0 ? -6 : 1); 
+            return new Date(d.setDate(diff));
         }
 
         function renderWeek() {
-            const container = document.getElementById('week-display');
+            const monday = getMonday(viewDate);
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            // Update Header Title
+            const opts = { day: 'numeric', month: 'short' };
+            document.getElementById('week-display').innerText = `${monday.toLocaleDateString('fr-FR', opts)} - ${sunday.toLocaleDateString('fr-FR', opts)}`;
+
+            const container = document.getElementById('days-container');
             container.innerHTML = '';
-            let curr = new Date();
-            let first = curr.getDate() - curr.getDay() + 1;
-            
-            for(let i=0; i<7; i++) {
-                let d = new Date(new Date().setDate(first + i));
-                let dateStr = d.toISOString().split('T')[0];
-                let isSel = dateStr === selectedDate;
-                let dayName = d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '');
+
+            // Generate 7 days
+            for (let i = 0; i < 7; i++) {
+                const tempDate = new Date(monday);
+                tempDate.setDate(monday.getDate() + i);
+                const iso = tempDate.toISOString().split('T')[0];
+                const dayName = tempDate.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '');
+                const dayNum = tempDate.getDate();
+
+                const isActive = iso === selectedDateStr;
+                const hasData = db[currentUser][iso] && db[currentUser][iso].length > 0;
+
+                const div = document.createElement('div');
+                div.className = `day-pill ${isActive ? 'day-active' : ''} cursor-pointer`;
+                div.onclick = () => { selectedDateStr = iso; renderWeek(); renderWorkout(); };
                 
-                container.innerHTML += `
-                    <div onclick="selectDate('${dateStr}')" class="day-bubble ${isSel ? 'day-selected' : ''}">
-                        <span class="${isSel ? 'text-white' : 'opacity-40'} mb-1">${dayName}</span>
-                        <span class="text-sm">${d.getDate()}</span>
-                        ${db[curUser].planning[dateStr] ? '<div class="plan-dot"></div>' : ''}
-                    </div>
+                div.innerHTML = `
+                    <span class="text-[10px] font-bold uppercase opacity-60 mb-1">${dayName}</span>
+                    <span class="text-xl font-black">${dayNum}</span>
+                    ${hasData ? `<div class="w-1.5 h-1.5 rounded-full mt-2" style="background:var(--primary-dark)"></div>` : ''}
                 `;
+                container.appendChild(div);
             }
+            renderWorkout();
         }
 
-        function selectDate(d) { selectedDate = d; render(); }
-
-        function toggleWeightInputs() {
-            const type = document.getElementById('m-type').value;
-            document.getElementById('weight-end-container').classList.toggle('hidden', type === 'Constante');
-        }
-
-        function showSportForm() { document.getElementById('sport-modal').classList.remove('hidden'); }
-        function closeSportModal() { document.getElementById('sport-modal').classList.add('hidden'); }
-
-        function addSport() {
-            const name = document.getElementById('m-name').value;
-            const type = document.getElementById('m-type').value;
-            const w1 = parseFloat(document.getElementById('m-weight').value) || 0;
-            const w2 = parseFloat(document.getElementById('m-weight-end').value) || 0;
-            const reps = parseInt(document.getElementById('m-reps').value) || 0;
-            if(!name) return;
-            db[curUser].sport.unshift({ id: Date.now(), date: selectedDate, name, type, w1, w2, reps });
-            save(); closeSportModal();
-        }
-
-        function copyLastWeek() {
-            if(!confirm("Copier la routine de la semaine passée ?")) return;
-            const oneWeek = 7 * 24 * 60 * 60 * 1000;
-            let curr = new Date();
-            let first = curr.getDate() - curr.getDay() + 1;
-            for(let i=0; i<7; i++) {
-                let targetDate = new Date(new Date().setDate(first + i)).toISOString().split('T')[0];
-                let oldDate = new Date(new Date(targetDate).getTime() - oneWeek).toISOString().split('T')[0];
-                if(db[curUser].planning[oldDate]) {
-                    db[curUser].planning[targetDate] = db[curUser].planning[oldDate];
-                    db[curUser].sport.filter(s => s.date === oldDate).forEach(ex => {
-                        db[curUser].sport.push({...ex, id: Date.now() + Math.random(), date: targetDate});
-                    });
-                }
-            }
-            save(); alert("Routine synchronisée ! ✨");
-        }
-
-        function savePlan() {
-            db[curUser].planning[selectedDate] = document.getElementById('plan-input').value;
-            document.getElementById('plan-modal').classList.add('hidden');
-            save();
-        }
-
-        function openPlanModal() {
-            document.getElementById('plan-input').value = db[curUser].planning[selectedDate] || "";
-            document.getElementById('plan-modal').classList.remove('hidden');
-        }
-
-        function deleteEx(id) { db[curUser].sport = db[curUser].sport.filter(s => s.id !== id); save(); }
-
-        function save() {
-            localStorage.setItem('fit_siana_mel_v2', JSON.stringify(db));
-            render();
-        }
-
-        function render() {
-            renderWeek();
-            const data = db[curUser];
-            const dayEx = data.sport.filter(s => s.date === selectedDate);
-            document.getElementById('current-date-label').innerText = new Date(selectedDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long'});
-            document.getElementById('plan-name').innerText = data.planning[selectedDate] || "Jour de Repos";
+        // WORKOUT LOGIC
+        function renderWorkout() {
+            const list = document.getElementById('workout-list');
+            const data = db[currentUser][selectedDateStr] || [];
             
-            const vol = dayEx.reduce((acc, curr) => acc + (Math.max(curr.w1, curr.w2) * curr.reps), 0);
-            document.getElementById('stat-vol').innerText = vol + 'kg';
-            document.getElementById('stat-count').innerText = dayEx.length;
+            // Title update
+            const dateObj = new Date(selectedDateStr);
+            document.getElementById('current-day-title').innerText = dateObj.toLocaleDateString('fr-FR', { weekday: 'long' });
+            document.getElementById('current-full-date').innerText = dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-            const list = document.getElementById('list-exercises');
-            list.innerHTML = dayEx.map(ex => `
-                <div class="card p-4 flex justify-between items-center relative border-l-4 border-pink-200">
-                    <div>
-                        <div class="text-[10px] font-black text-pink-400 uppercase tracking-widest">${ex.type}</div>
-                        <div class="text-sm font-extrabold uppercase text-slate-700">${ex.name}</div>
-                        <div class="text-[10px] font-bold opacity-50 mt-1">${ex.reps} RÉPÉTITIONS</div>
+            if (data.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-12 opacity-40">
+                        <div class="text-5xl mb-3 grayscale">🦄</div>
+                        <p class="text-sm font-bold text-pink-900">Repos ou pas encore planifié</p>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = data.map((ex, index) => {
+                let weightDisplay = '';
+                if(ex.type === 'normal') {
+                    weightDisplay = `<div class="text-xl font-black text-pink-600">${ex.w1} <span class="text-[10px] opacity-50 text-black">KG</span></div>`;
+                } else {
+                    const icon = ex.type === 'progressive' ? '📈' : '📉';
+                    weightDisplay = `
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-bold text-gray-400">${ex.wStart}</span>
+                            <span class="text-xs">➔</span>
+                            <span class="text-xl font-black text-pink-600">${ex.wEnd} <span class="text-[10px] opacity-50 text-black">KG</span></span>
+                            <span class="text-xs">${icon}</span>
+                        </div>
+                    `;
+                }
+
+                return `
+                <div class="card p-4 relative group anim-item" style="animation-delay: ${index * 0.05}s">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-lg text-pink-950 uppercase leading-tight w-3/4">${ex.name}</h4>
+                        <button onclick="deleteEx(${index})" class="opacity-20 hover:opacity-100 text-red-500 font-bold px-2">✕</button>
                     </div>
-                    <div class="text-right">
-                        <div class="text-xs font-black opacity-30">POIDS</div>
-                        <div class="text-xl font-black text-pink-500">${ex.type === 'Constante' ? ex.w1 : ex.w1 + '→' + ex.w2}<span class="text-[10px] ml-1">KG</span></div>
+                    <div class="flex justify-between items-end">
+                        <div class="flex gap-3">
+                            <div class="bg-pink-50 border border-pink-100 px-3 py-1 rounded-lg text-center">
+                                <div class="text-[9px] uppercase font-bold text-gray-400">Séries</div>
+                                <div class="font-bold text-pink-900">${ex.sets}</div>
+                            </div>
+                            <div class="bg-pink-50 border border-pink-100 px-3 py-1 rounded-lg text-center">
+                                <div class="text-[9px] uppercase font-bold text-gray-400">Reps</div>
+                                <div class="font-bold text-pink-900">${ex.reps}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            ${weightDisplay}
+                        </div>
                     </div>
-                    <button onclick="deleteEx(${ex.id})" class="absolute -right-2 -top-2 w-6 h-6 bg-red-500 text-white rounded-full text-[10px] font-bold shadow-md">✕</button>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
-        render();
+
+        // ADD EXERCISE LOGIC
+        function openModal() {
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('ex-name').focus();
+        }
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function setType(t) {
+            currentType = t;
+            // Reset styles
+            ['normal', 'progressive', 'degressive'].forEach(type => {
+                const btn = document.getElementById(`btn-t-${type}`);
+                if (type === t) {
+                    btn.className = "py-2 rounded-xl text-[10px] font-bold border border-pink-200 bg-pink-50 text-pink-600 shadow-sm";
+                } else {
+                    btn.className = "py-2 rounded-xl text-[10px] font-bold border border-gray-100 text-gray-400";
+                }
+            });
+
+            const single = document.getElementById('weight-single');
+            const double = document.getElementById('weight-double');
+            const hint = document.getElementById('hint-text');
+
+            if (t === 'normal') {
+                single.classList.remove('hidden');
+                double.classList.add('hidden');
+                hint.innerText = "Charge constante sur toutes les séries";
+            } else {
+                single.classList.add('hidden');
+                double.classList.remove('hidden');
+                double.className = "grid grid-cols-[1fr_20px_1fr] gap-1 items-center"; // Force grid display
+                hint.innerText = t === 'progressive' ? "Tu augmentes la charge à chaque série" : "Tu diminues la charge (Drop set)";
+            }
+        }
+
+        function saveExercise() {
+            const name = document.getElementById('ex-name').value;
+            if (!name) return alert("Il faut un nom !");
+
+            const sets = document.getElementById('ex-sets').value || 4;
+            const reps = document.getElementById('ex-reps').value || 10;
+            
+            let exData = {
+                name, sets, reps, type: currentType
+            };
+
+            if (currentType === 'normal') {
+                exData.w1 = document.getElementById('ex-w1').value || 0;
+            } else {
+                exData.wStart = document.getElementById('ex-w-start').value || 0;
+                exData.wEnd = document.getElementById('ex-w-end').value || 0;
+            }
+
+            if (!db[currentUser][selectedDateStr]) db[currentUser][selectedDateStr] = [];
+            db[currentUser][selectedDateStr].push(exData);
+            
+            saveDB();
+            renderWorkout();
+            renderWeek(); // To update the dot indicator
+            closeModal();
+            
+            // Clear inputs
+            document.getElementById('ex-name').value = '';
+        }
+
+        function deleteEx(index) {
+            if(confirm('Supprimer cet exercice ?')) {
+                db[currentUser][selectedDateStr].splice(index, 1);
+                saveDB();
+                renderWorkout();
+                renderWeek();
+            }
+        }
+
+        // COPY FEATURE
+        function copyLastWeek() {
+            // Calculate date - 7 days
+            const curDate = new Date(selectedDateStr);
+            const prevDate = new Date(curDate);
+            prevDate.setDate(curDate.getDate() - 7);
+            const prevIso = prevDate.toISOString().split('T')[0];
+
+            const prevData = db[currentUser][prevIso];
+
+            if (!prevData || prevData.length === 0) {
+                alert("Rien trouvé à la date du " + prevDate.toLocaleDateString() + " 😕");
+                return;
+            }
+
+            if (confirm(`Copier la séance du ${prevDate.toLocaleDateString()} ?`)) {
+                // Deep copy
+                db[currentUser][selectedDateStr] = JSON.parse(JSON.stringify(prevData));
+                saveDB();
+                renderWorkout();
+                renderWeek();
+            }
+        }
+
     </script>
 </body>
 </html>
-

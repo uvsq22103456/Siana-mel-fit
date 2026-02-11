@@ -1,1 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SIANA & MEL - FITNESS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        
+        :root { 
+            --bg: #fdf2f4; /* Fond rose très léger mais teinté */
+            --card: #ffffff; 
+            --text: #5e3a42; /* Texte plus foncé pour la lisibilité */
+            --primary: #ff8fa3; /* Rose Siana - Plus vif */
+            --secondary: #ffccd5; /* Rose Mel */
+            --accent: #ff4d6d;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            height: 100dvh; 
+            margin: 0;
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        /* Conteneur principal pour éviter que tout soit "tout blanc" */
+        .glass { background: #ffffff; border-bottom: 2px solid var(--secondary); }
+        
+        .card { 
+            background: white; 
+            border: 1px solid var(--secondary); 
+            border-radius: 20px; 
+            box-shadow: 0 4px 12px rgba(255, 143, 163, 0.15); 
+        }
+        
+        /* Semainier avec plus de contraste */
+        .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .day-bubble {
+            aspect-ratio: 1/1.3; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 12px; font-size: 11px; font-weight: 800; transition: all 0.2s;
+            background: #fff; border: 2px solid var(--secondary);
+            color: var(--text);
+        }
+        .day-selected { 
+            background: var(--primary) !important; 
+            color: white !important; 
+            border-color: var(--accent) !important;
+            transform: scale(1.05); 
+        }
+        
+        .plan-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 4px; }
+
+        input, select { 
+            background: #f8f9fa !important; 
+            border: 2px solid var(--secondary) !important; 
+            color: var(--text) !important; 
+            border-radius: 12px;
+            padding: 12px !important;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            font-weight: 800;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(255, 143, 163, 0.3);
+        }
+
+        .nav-item { color: #b08d95; font-weight: 700; }
+        .nav-active { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <header class="glass sticky top-0 z-40 pt-12 pb-4 px-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex gap-2 p-1 bg-pink-100 rounded-xl">
+                <button onclick="switchUser('siana')" id="btn-siana" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all bg-white shadow-sm text-pink-500">🌸 Siana</button>
+                <button onclick="switchUser('mel')" id="btn-mel" class="px-5 py-2 rounded-lg text-xs font-black uppercase transition-all opacity-60">🌷 Mel</button>
+            </div>
+            <button onclick="copyLastWeek()" class="text-[10px] font-black text-white bg-pink-400 px-3 py-2 rounded-lg active:scale-95 shadow-md">
+                COPIER J-7 📋
+            </button>
+        </div>
+        
+        <div class="week-grid" id="week-display">
+            </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-5 space-y-6 pb-32">
+        
+        <section class="card p-5 border-l-8 border-pink-400">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-[10px] font-black uppercase opacity-60">Séance du <span id="current-date-label">...</span></h2>
+                    <p id="plan-name" class="text-xl font-extrabold text-pink-500">Chargement...</p>
+                </div>
+                <button onclick="openPlanModal()" class="w-12 h-12 rounded-2xl bg-pink-500 text-white flex items-center justify-center font-bold text-2xl shadow-lg">+</button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-pink-50 p-3 rounded-xl border border-pink-100">
+                    <span class="block text-[9px] uppercase font-black opacity-50">Volume Total</span>
+                    <span id="stat-vol" class="text-lg font-black text-pink-600">0kg</span>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                    <span class="block text-[9px] uppercase font-black opacity-50">Exercices</span>
+                    <span id="stat-count" class="text-lg font-black text-blue-600">0</span>
+                </div>
+            </div>
+        </section>
+
+        <div id="list-exercises" class="space-y-4">
+            </div>
+
+        <button onclick="showSportForm()" class="w-full py-5 bg-white border-4 border-dashed border-pink-200 rounded-3xl text-pink-400 font-black text-sm uppercase hover:bg-pink-50 transition">
+            + AJOUTER UN EXERCICE
+        </button>
+
+    </main>
+
+    <div id="sport-modal" class="fixed inset-0 bg-white z-[100] hidden p-6 overflow-y-auto">
+        <div class="max-w-md mx-auto space-y-6 pt-10">
+            <h3 class="text-2xl font-black text-pink-500 uppercase text-center">Nouvel Exo 🌸</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-black uppercase opacity-50 ml-1">Nom de l'exercice</label>
+                    <input type="text" id="m-name" placeholder="ex: Squat, Hip Thrust..." class="w-full font-bold">
+                </div>
+                
+                <div>
+                    <label class="text-xs font-black uppercase opacity-50 ml-1">Type de série</label>
+                    <select id="m-type" class="w-full font-bold" onchange="toggleWeightInputs()">
+                        <option value="Constante">Charge Fixe</option>
+                        <option value="Progressive">Charge Progressive 📈</option>
+                        <option value="Dégressive">Dégressif (Drop Set) 📉</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="weight-start-container">
+                        <label class="text-xs font-black uppercase opacity-50 ml-1">Poids (kg)</label>
+                        <input type="number" id="m-weight" class="w-full text-center font-black" placeholder="0">
+                    </div>
+                    <div id="weight-end-container" class="hidden">
+                        <label id="weight-end-label" class="text-xs font-black uppercase opacity-50 ml-1">Poids Fin</label>
+                        <input type="number" id="m-weight-end" class="w-full text-center font-black" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="text-xs font-black uppercase opacity-50 ml-1">Répétitions</label>
+                        <input type="number" id="m-reps" class="w-full text-center font-black" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-6">
+                    <button onclick="closeSportModal()" class="flex-1 py-4 font-black uppercase opacity-50">Retour</button>
+                    <button onclick="addSport()" class="flex-1 btn-primary py-4 uppercase">Valider</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="plan-modal" class="fixed inset-0 bg-pink-500/40 backdrop-blur-md z-[100] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl border-2 border-pink-200">
+            <h4 class="text-sm font-black uppercase text-center mb-4 text-pink-500">Nom de la séance</h4>
+            <input type="text" id="plan-input" placeholder="ex: Leg Day" class="w-full p-4 mb-4 font-bold text-center border-2 border-pink-100">
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('plan-modal').classList.add('hidden')" class="flex-1 py-3 font-bold opacity-50">Annuler</button>
+                <button onclick="savePlan()" class="flex-1 py-3 btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="glass fixed bottom-0 w-full z-50 pb-8 pt-4 border-t-2 border-pink-100">
+        <div class="flex justify-around items-center">
+            <div class="nav-item nav-active flex flex-col items-center">
+                <span class="text-2xl">💪</span>
+                <span class="text-[10px] uppercase">Sport</span>
+            </div>
+            <div class="nav-item flex flex-col items-center opacity-40">
+                <span class="text-2xl">🍱</span>
+                <span class="text-[10px] uppercase">Food</span>
+            </div>
+            <div class="nav-item flex flex-col items-center opacity-40">
+                <span class="text-2xl">✨</span>
+                <span class="text-[10px] uppercase">Moi</span>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        let curUser = 'siana';
+        let db = JSON.parse(localStorage.getItem('fit_siana_mel_v2')) || { 
+            siana: { sport:[], planning:{} }, 
+            mel: { sport:[], planning:{} } 
+        };
+
+        let selectedDate = new Date().toISOString().split('T')[0];
+
+        function switchUser(u) {
+            curUser = u;
+            document.getElementById('btn-siana').className = u === 'siana' ? 'px-5 py-2 rounded-lg text-xs font-black uppercase transition-all bg-white shadow-sm text-pink-500' : 'px-5 py-2 rounded-lg text-xs font-black uppercase transition-all opacity-60';
+            document.getElementById('btn-mel').className = u === 'mel' ? 'px-5 py-2 rounded-lg text-xs font-black uppercase transition-all bg-white shadow-sm text-pink-500' : 'px-5 py-2 rounded-lg text-xs font-black uppercase transition-all opacity-60';
+            render();
+        }
+
+        function renderWeek() {
+            const container = document.getElementById('week-display');
+            container.innerHTML = '';
+            let curr = new Date();
+            let first = curr.getDate() - curr.getDay() + 1;
+            
+            for(let i=0; i<7; i++) {
+                let d = new Date(new Date().setDate(first + i));
+                let dateStr = d.toISOString().split('T')[0];
+                let isSel = dateStr === selectedDate;
+                let dayName = d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '');
+                
+                container.innerHTML += `
+                    <div onclick="selectDate('${dateStr}')" class="day-bubble ${isSel ? 'day-selected' : ''}">
+                        <span class="${isSel ? 'text-white' : 'opacity-40'} mb-1">${dayName}</span>
+                        <span class="text-sm">${d.getDate()}</span>
+                        ${db[curUser].planning[dateStr] ? '<div class="plan-dot"></div>' : ''}
+                    </div>
+                `;
+            }
+        }
+
+        function selectDate(d) { selectedDate = d; render(); }
+
+        function toggleWeightInputs() {
+            const type = document.getElementById('m-type').value;
+            document.getElementById('weight-end-container').classList.toggle('hidden', type === 'Constante');
+        }
+
+        function showSportForm() { document.getElementById('sport-modal').classList.remove('hidden'); }
+        function closeSportModal() { document.getElementById('sport-modal').classList.add('hidden'); }
+
+        function addSport() {
+            const name = document.getElementById('m-name').value;
+            const type = document.getElementById('m-type').value;
+            const w1 = parseFloat(document.getElementById('m-weight').value) || 0;
+            const w2 = parseFloat(document.getElementById('m-weight-end').value) || 0;
+            const reps = parseInt(document.getElementById('m-reps').value) || 0;
+            if(!name) return;
+            db[curUser].sport.unshift({ id: Date.now(), date: selectedDate, name, type, w1, w2, reps });
+            save(); closeSportModal();
+        }
+
+        function copyLastWeek() {
+            if(!confirm("Copier la routine de la semaine passée ?")) return;
+            const oneWeek = 7 * 24 * 60 * 60 * 1000;
+            let curr = new Date();
+            let first = curr.getDate() - curr.getDay() + 1;
+            for(let i=0; i<7; i++) {
+                let targetDate = new Date(new Date().setDate(first + i)).toISOString().split('T')[0];
+                let oldDate = new Date(new Date(targetDate).getTime() - oneWeek).toISOString().split('T')[0];
+                if(db[curUser].planning[oldDate]) {
+                    db[curUser].planning[targetDate] = db[curUser].planning[oldDate];
+                    db[curUser].sport.filter(s => s.date === oldDate).forEach(ex => {
+                        db[curUser].sport.push({...ex, id: Date.now() + Math.random(), date: targetDate});
+                    });
+                }
+            }
+            save(); alert("Routine synchronisée ! ✨");
+        }
+
+        function savePlan() {
+            db[curUser].planning[selectedDate] = document.getElementById('plan-input').value;
+            document.getElementById('plan-modal').classList.add('hidden');
+            save();
+        }
+
+        function openPlanModal() {
+            document.getElementById('plan-input').value = db[curUser].planning[selectedDate] || "";
+            document.getElementById('plan-modal').classList.remove('hidden');
+        }
+
+        function deleteEx(id) { db[curUser].sport = db[curUser].sport.filter(s => s.id !== id); save(); }
+
+        function save() {
+            localStorage.setItem('fit_siana_mel_v2', JSON.stringify(db));
+            render();
+        }
+
+        function render() {
+            renderWeek();
+            const data = db[curUser];
+            const dayEx = data.sport.filter(s => s.date === selectedDate);
+            document.getElementById('current-date-label').innerText = new Date(selectedDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long'});
+            document.getElementById('plan-name').innerText = data.planning[selectedDate] || "Jour de Repos";
+            
+            const vol = dayEx.reduce((acc, curr) => acc + (Math.max(curr.w1, curr.w2) * curr.reps), 0);
+            document.getElementById('stat-vol').innerText = vol + 'kg';
+            document.getElementById('stat-count').innerText = dayEx.length;
+
+            const list = document.getElementById('list-exercises');
+            list.innerHTML = dayEx.map(ex => `
+                <div class="card p-4 flex justify-between items-center relative border-l-4 border-pink-200">
+                    <div>
+                        <div class="text-[10px] font-black text-pink-400 uppercase tracking-widest">${ex.type}</div>
+                        <div class="text-sm font-extrabold uppercase text-slate-700">${ex.name}</div>
+                        <div class="text-[10px] font-bold opacity-50 mt-1">${ex.reps} RÉPÉTITIONS</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-black opacity-30">POIDS</div>
+                        <div class="text-xl font-black text-pink-500">${ex.type === 'Constante' ? ex.w1 : ex.w1 + '→' + ex.w2}<span class="text-[10px] ml-1">KG</span></div>
+                    </div>
+                    <button onclick="deleteEx(${ex.id})" class="absolute -right-2 -top-2 w-6 h-6 bg-red-500 text-white rounded-full text-[10px] font-bold shadow-md">✕</button>
+                </div>
+            `).join('');
+        }
+        render();
+    </script>
+</body>
+</html>
 

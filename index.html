@@ -2,517 +2,403 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>FITNESS DUO</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SAMCY APP</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        
         :root {
-            --bg: #fff1f2;
-            --card: #ffffff;
-            --text: #4a044e;
-            --primary: #ec4899; /* Pink 500 */
-            --primary-soft: #fbcfe8; /* Pink 200 */
-            --nav-active: #db2777;
+            --primary: #A68A64; /* Nude foncé */
+            --secondary: #E6DCD3; /* Nude clair */
+            --bg: #F9F7F5;
+            --white: #FFFFFF;
         }
-
-        body.theme-mel { --primary: #8b5cf6; --primary-soft: #ddd6fe; --nav-active: #7c3aed; --bg: #f5f3ff; }
 
         body { 
-            font-family: 'Outfit', sans-serif; 
             background-color: var(--bg); 
-            color: var(--text); 
-            height: 100dvh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            transition: background 0.3s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #4A443F;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .safe-pt { padding-top: max(env(safe-area-inset-top), 20px); }
-        .safe-pb { padding-bottom: max(env(safe-area-inset-bottom), 90px); }
-
-        .card {
-            background: var(--card);
-            border-radius: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            border: 1px solid rgba(255,255,255,0.8);
-        }
-
-        /* CALENDRIER RAFFINÉ */
-        .cal-day {
-            aspect-ratio: 1/1.2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 14px;
-            transition: all 0.2s;
-            font-size: 13px; /* Plus petit */
-            color: #9ca3af;
-            font-weight: 600;
-        }
-        .cal-day.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 12px -2px var(--primary);
-            font-weight: 800;
-        }
-        .cal-dot { width: 4px; height: 4px; background: var(--primary); border-radius: 50%; margin-top: 4px; }
-        .active .cal-dot { background: white; }
-
-        /* NAVIGATION */
-        .nav-bar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid #f3f4f6; }
-        .nav-item { opacity: 0.4; transition: 0.3s; }
-        .nav-item.active { opacity: 1; color: var(--nav-active); transform: translateY(-2px); }
-
-        /* INPUTS */
-        input:focus { outline: 2px solid var(--primary-soft); }
+        /* --- NAVIGATION --- */
+        .page { display: none; padding: 20px 20px 100px 20px; animation: fadeIn 0.3s ease; height: 100vh; overflow-y: auto; }
+        .page.active { display: block; }
         
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
+        .nav-bar {
+            position: fixed; bottom: 20px; left: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px);
+            border-radius: 25px; height: 70px;
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.5);
+            z-index: 1000;
+        }
+        .nav-icon { font-size: 20px; color: #CCC; transition: 0.2s; }
+        .nav-icon.active { color: var(--primary); transform: translateY(-3px); }
+
+        /* --- CARDS & UI --- */
+        .card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        
+        .btn-add {
+            background: var(--primary); color: white; border-radius: 12px;
+            padding: 8px 16px; font-size: 12px; font-weight: bold;
+        }
+
+        /* Wishlist Grid */
+        .wish-grid { display: grid; grid-cols-2 gap-3; }
+        .wish-item { background: white; border-radius: 15px; overflow: hidden; position: relative; }
+        .wish-img { width: 100%; h-32; object-fit: cover; background: #eee; }
+
+        /* Checkbox Custom */
+        .checkbox-wrapper input:checked + div { background: var(--primary); border-color: var(--primary); }
+        .checkbox-wrapper input:checked + div svg { display: block; }
+
+        /* Journal */
+        .journal-bad { border-left: 3px solid #ffb3b3; background: #fff5f5; }
+        .journal-good { border-left: 3px solid #b3ffb3; background: #f5fff5; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="theme-siana">
+<body>
 
-    <header class="safe-pt px-6 pb-2 flex justify-between items-center z-20">
-        <div class="bg-white p-1 rounded-full shadow-sm flex">
-            <button onclick="switchUser('siana')" id="btn-siana" class="px-4 py-2 rounded-full text-[10px] font-black uppercase transition bg-pink-500 text-white shadow">Siana</button>
-            <button onclick="switchUser('mel')" id="btn-mel" class="px-4 py-2 rounded-full text-[10px] font-black uppercase transition text-gray-400">Mel</button>
+    <div id="home" class="page active">
+        <header class="flex justify-between items-center mb-6 pt-4">
+            <div>
+                <h1 class="text-2xl font-bold text-[#4A443F]">Bonjour <span id="user-name">...</span></h1>
+                <p class="text-xs text-gray-400 uppercase tracking-widest">En route vers le mariage</p>
+            </div>
+            <div onclick="switchIdentity()" class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs cursor-pointer">👤</div>
+        </header>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div onclick="changeMood('samia')" class="card text-center active:scale-95 transition">
+                <p class="text-[10px] font-bold uppercase text-gray-400">Samia</p>
+                <div id="mood-samia" class="text-4xl my-2">😶</div>
+            </div>
+            <div onclick="changeMood('quincy')" class="card text-center active:scale-95 transition">
+                <p class="text-[10px] font-bold uppercase text-gray-400">Quincy</p>
+                <div id="mood-quincy" class="text-4xl my-2">😶</div>
+            </div>
         </div>
-        <div class="text-[10px] font-black uppercase tracking-widest opacity-40" id="header-date">...</div>
-    </header>
 
-    <main class="flex-1 overflow-y-auto relative">
-        
-        <section id="view-dash" class="p-5 space-y-4 fade-in">
-            <div class="card p-5">
-                <div class="flex justify-between items-center mb-2 px-1">
-                    <button onclick="changeWeek(-1)" class="text-gray-400 p-2 text-xl">←</button>
-                    <div class="flex flex-col items-center">
-                        <span id="month-label" class="text-xs font-black uppercase tracking-widest">FÉVRIER</span>
-                    </div>
-                    <button onclick="changeWeek(1)" class="text-gray-400 p-2 text-xl">→</button>
-                </div>
-
-                <button onclick="copyEntireWeek()" class="w-full mb-4 py-2 bg-gray-50 hover:bg-pink-50 text-gray-400 hover:text-pink-500 rounded-lg text-[10px] font-bold uppercase transition flex items-center justify-center gap-2">
-                    <span>↺</span> Copier la semaine précédente ici
-                </button>
-
-                <div id="calendar-grid" class="grid grid-cols-7 gap-2 mb-4"></div>
-                
-                <div class="border-t border-gray-100 pt-3 flex justify-between items-end">
-                    <div>
-                        <div class="text-[9px] font-bold text-gray-400 uppercase">Ce jour</div>
-                        <div id="plan-dash" class="text-xl font-black text-gray-800">Repos</div>
-                    </div>
-                    <button onclick="nav('sport')" class="bg-gray-100 hover:bg-gray-200 text-xs font-black px-4 py-2 rounded-xl transition">Détails ></button>
-                </div>
+        <div class="card">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-sm"><i class="fa-regular fa-calendar mr-2"></i>Calendrier</h3>
+                <button onclick="addCalendarEvent()" class="text-xs bg-[#F3EFEA] text-[#8E735B] px-3 py-1 rounded-full font-bold">+ Ajouter</button>
             </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div class="card p-4 flex flex-col justify-between h-28">
-                    <span class="text-[9px] font-black uppercase text-gray-400">Sommeil 🌙</span>
-                    <div class="flex justify-center items-baseline gap-1">
-                        <span id="val-sleep" class="text-2xl font-black text-indigo-900">--</span>
-                        <span class="text-xs font-bold text-gray-400">h</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <input type="time" id="sleep-start" onchange="saveSleep()" class="bg-gray-50 rounded w-16 text-[9px] text-center">
-                        <input type="time" id="sleep-end" onchange="saveSleep()" class="bg-gray-50 rounded w-16 text-[9px] text-center">
-                    </div>
-                </div>
-                <div class="card p-4 flex flex-col justify-between h-28">
-                    <span class="text-[9px] font-black uppercase text-gray-400">Eau 💧</span>
-                    <div class="flex justify-center items-baseline gap-1">
-                        <span id="val-water" class="text-3xl font-black text-blue-500">0</span>
-                    </div>
-                    <div class="flex justify-center gap-3">
-                        <button onclick="updWater(-1)" class="w-6 h-6 rounded-full bg-gray-100 font-bold text-gray-400">-</button>
-                        <button onclick="updWater(1)" class="w-6 h-6 rounded-full bg-blue-400 text-white shadow-md font-bold">+</button>
-                    </div>
-                </div>
+            <div id="calendar-list" class="space-y-3">
+                <p class="text-center text-gray-300 text-xs py-4">Rien de prévu pour l'instant...</p>
             </div>
-            
-            <div class="card p-4 flex items-center justify-between">
-                <span class="text-[9px] font-black uppercase text-gray-400">Activité 👣</span>
-                <input type="number" id="val-steps" onchange="saveSteps()" placeholder="0" class="text-right font-black text-xl w-32 bg-transparent outline-none">
-            </div>
-            <div class="h-20"></div>
-        </section>
-
-        <section id="view-sport" class="p-5 space-y-4 hidden fade-in">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-black uppercase">Séance du <span id="sport-date-lbl" class="text-pink-500">...</span></h2>
-            </div>
-
-            <div class="card p-4">
-                <label class="text-[9px] font-black uppercase text-gray-400">Nom de la séance</label>
-                <input type="text" id="input-plan-name" onchange="savePlanName()" placeholder="Ex: Leg Day, Cardio..." class="w-full text-xl font-black bg-transparent mt-1 outline-none text-gray-800">
-                <div class="flex gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar">
-                    <button onclick="setPlanName('LEG DAY')" class="whitespace-nowrap bg-pink-50 text-pink-600 px-3 py-1 rounded-lg text-[9px] font-bold">LEG DAY</button>
-                    <button onclick="setPlanName('UPPER')" class="whitespace-nowrap bg-purple-50 text-purple-600 px-3 py-1 rounded-lg text-[9px] font-bold">UPPER</button>
-                    <button onclick="setPlanName('CARDIO')" class="whitespace-nowrap bg-orange-50 text-orange-600 px-3 py-1 rounded-lg text-[9px] font-bold">CARDIO</button>
-                    <button onclick="setPlanName('REPOS')" class="whitespace-nowrap bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-[9px] font-bold">REPOS</button>
-                </div>
-            </div>
-
-            <div id="list-sport" class="space-y-3 pb-6"></div>
-
-            <button onclick="openExoModal()" class="w-full py-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 font-bold uppercase text-xs hover:border-pink-300 hover:text-pink-500 transition">
-                + Ajouter un exercice
-            </button>
-            <div class="h-24"></div>
-        </section>
-
-        <section id="view-nutri" class="p-5 space-y-4 hidden fade-in">
-            <h2 class="text-lg font-black uppercase">Repas</h2>
-            <div class="card p-4 space-y-3">
-                <input type="text" id="food-name" placeholder="Qu'as-tu mangé ?" class="w-full font-bold bg-gray-50 p-3 rounded-xl">
-                <div class="flex gap-2">
-                    <input type="number" id="food-cal" placeholder="Kcal" class="w-1/2 font-bold bg-gray-50 p-3 rounded-xl text-center">
-                    <input type="number" id="food-prot" placeholder="Prot (g)" class="w-1/2 font-bold bg-gray-50 p-3 rounded-xl text-center">
-                </div>
-                <button onclick="addFood()" class="w-full bg-emerald-400 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg shadow-emerald-200">Ajouter</button>
-            </div>
-            <div id="list-food" class="space-y-2"></div>
-            <div class="h-24"></div>
-        </section>
-
-        <section id="view-body" class="p-5 space-y-4 hidden fade-in">
-            <h2 class="text-lg font-black uppercase">Mensurations</h2>
-            <div class="card p-5 space-y-4">
-                <div>
-                    <label class="text-[9px] font-black uppercase text-gray-400">Poids (kg)</label>
-                    <input type="number" id="body-w" class="w-full text-3xl font-black border-b border-gray-100 pb-2 outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[9px] font-black uppercase text-gray-400">Taille (cm)</label>
-                        <input type="number" id="body-waist" class="w-full font-bold bg-gray-50 p-2 rounded-lg mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-black uppercase text-gray-400">Hanches (cm)</label>
-                        <input type="number" id="body-hips" class="w-full font-bold bg-gray-50 p-2 rounded-lg mt-1">
-                    </div>
-                </div>
-                <button onclick="saveBody()" class="w-full bg-indigo-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg shadow-indigo-200">Enregistrer</button>
-            </div>
-            <div id="list-body" class="space-y-2"></div>
-            <div class="h-24"></div>
-        </section>
-
-    </main>
-
-    <div id="modal-exo" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <div class="flex justify-between mb-4">
-                <h3 class="font-black uppercase">Nouvel Exercice</h3>
-                <button onclick="document.getElementById('modal-exo').classList.add('hidden')" class="font-bold text-gray-300">✕</button>
-            </div>
-            <input type="text" id="ex-name" placeholder="Nom (ex: Squat)" class="w-full text-lg font-bold border-b border-gray-200 pb-2 mb-4 outline-none">
-            
-            <div class="flex bg-gray-100 p-1 rounded-lg mb-4">
-                <button onclick="setExType('normal')" id="btn-t-normal" class="flex-1 py-2 text-[10px] font-bold rounded bg-white shadow text-pink-500 transition">Normal</button>
-                <button onclick="setExType('prog')" id="btn-t-prog" class="flex-1 py-2 text-[10px] font-bold rounded text-gray-400 transition">Progressif</button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <input type="number" id="ex-sets" placeholder="Séries" class="bg-gray-50 p-2 rounded font-bold text-center">
-                <input type="number" id="ex-reps" placeholder="Reps" class="bg-gray-50 p-2 rounded font-bold text-center">
-            </div>
-
-            <div id="w-normal">
-                <input type="number" id="ex-w1" placeholder="Poids (kg)" class="w-full bg-pink-50 p-3 rounded-xl text-center font-black text-pink-600 text-xl">
-            </div>
-            <div id="w-prog" class="hidden grid grid-cols-[1fr_20px_1fr] gap-1 items-center">
-                <input type="number" id="ex-start" placeholder="Début" class="bg-pink-50 p-3 rounded-xl text-center font-bold text-pink-600">
-                <span class="text-center font-bold text-gray-300">➔</span>
-                <input type="number" id="ex-end" placeholder="Fin" class="bg-pink-50 p-3 rounded-xl text-center font-bold text-pink-600">
-            </div>
-
-            <button onclick="addExo()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-black uppercase text-xs mt-6 shadow-lg">Valider</button>
         </div>
     </div>
 
-    <nav class="nav-bar fixed bottom-0 w-full safe-pb z-40">
-        <div class="grid grid-cols-4 py-3">
-            <button onclick="nav('dash')" id="nav-dash" class="nav-item active flex flex-col items-center">
-                <span class="text-xl mb-0.5">📅</span>
-                <span class="text-[9px] font-black uppercase">Dash</span>
-            </button>
-            <button onclick="nav('sport')" id="nav-sport" class="nav-item flex flex-col items-center">
-                <span class="text-xl mb-0.5">💪</span>
-                <span class="text-[9px] font-black uppercase">Sport</span>
-            </button>
-            <button onclick="nav('nutri')" id="nav-nutri" class="nav-item flex flex-col items-center">
-                <span class="text-xl mb-0.5">🥗</span>
-                <span class="text-[9px] font-black uppercase">Nutri</span>
-            </button>
-            <button onclick="nav('body')" id="nav-body" class="nav-item flex flex-col items-center">
-                <span class="text-xl mb-0.5">📏</span>
-                <span class="text-[9px] font-black uppercase">Body</span>
-            </button>
+    <div id="deen" class="page">
+        <h2 class="text-xl font-bold mb-6 pt-4 text-center">Notre Spiritualité 🤲</h2>
+        
+        <div class="flex justify-center gap-4 mb-6">
+            <button onclick="setDeenView('samia')" id="tab-deen-samia" class="px-4 py-1 rounded-full text-xs font-bold bg-[#A68A64] text-white">Samia</button>
+            <button onclick="setDeenView('quincy')" id="tab-deen-quincy" class="px-4 py-1 rounded-full text-xs font-bold bg-white text-gray-400">Quincy</button>
         </div>
+
+        <div class="card">
+            <div id="prayer-list" class="space-y-4">
+                </div>
+        </div>
+    </div>
+
+    <div id="couple" class="page">
+        <h2 class="text-xl font-bold mb-4 pt-4">Espace Couple ❤️</h2>
+        
+        <div class="card bg-[#FDFBF7] border border-[#E6DCD3]">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-sm">Sondages</h3>
+                <button onclick="createPoll()" class="text-[10px] underline text-gray-500">Nouveau</button>
+            </div>
+            <div id="polls-list" class="space-y-2">
+                </div>
+        </div>
+
+        <h3 class="font-bold text-sm mb-2 mt-6">Journal de bord</h3>
+        <div class="flex gap-2 mb-4">
+            <button onclick="addJournalEntry('love')" class="flex-1 bg-white border border-green-100 py-2 rounded-xl text-xs font-bold text-green-600 shadow-sm">💚 Ce qui va</button>
+            <button onclick="addJournalEntry('improve')" class="flex-1 bg-white border border-red-100 py-2 rounded-xl text-xs font-bold text-red-400 shadow-sm">☁️ À améliorer</button>
+        </div>
+        <div id="journal-list" class="space-y-3 pb-20">
+            </div>
+    </div>
+
+    <div id="wish" class="page">
+        <h2 class="text-xl font-bold mb-4 pt-4">Wishlist 🎁</h2>
+        
+        <div class="flex mb-4 border-b border-gray-200">
+            <button onclick="setWishTab('samia')" id="wtab-samia" class="flex-1 pb-2 text-sm font-bold text-[#A68A64] border-b-2 border-[#A68A64]">Samia</button>
+            <button onclick="setWishTab('quincy')" id="wtab-quincy" class="flex-1 pb-2 text-sm font-bold text-gray-400">Quincy</button>
+        </div>
+
+        <button onclick="addToWishlist()" class="w-full py-3 bg-[#E6DCD3] rounded-xl text-[#8E735B] font-bold text-xs mb-4 border border-dashed border-[#A68A64]">+ Ajouter un article</button>
+
+        <div id="wishlist-grid" class="wish-grid">
+            </div>
+    </div>
+
+    <nav class="nav-bar">
+        <i onclick="navTo('home', this)" class="fa-solid fa-house nav-icon active"></i>
+        <i onclick="navTo('deen', this)" class="fa-solid fa-kaaba nav-icon"></i>
+        <i onclick="navTo('couple', this)" class="fa-solid fa-heart nav-icon"></i>
+        <i onclick="navTo('wish', this)" class="fa-solid fa-gift nav-icon"></i>
     </nav>
 
-    <script>
-        // CONFIG
-        let user = 'siana';
-        let viewDate = new Date();
-        let selDate = new Date().toISOString().split('T')[0];
-        let exType = 'normal';
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // INIT DB
-        let db = JSON.parse(localStorage.getItem('fit_final_v3')) || {
-            siana: { plan:{}, sleep:{}, water:{}, steps:{}, workouts:{}, food:[], body:[] },
-            mel: { plan:{}, sleep:{}, water:{}, steps:{}, workouts:{}, food:[], body:[] }
+        // --- ⚠️ REMPLACE TES CLÉS ICI (Sinon ça ne marche pas) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBZ96lSFIWzPsHklwk3ZU8kfWudfp8oVQ",
+            authDomain: "samcy-1136c.firebaseapp.com",
+            projectId: "samcy-1136c",
+            storageBucket: "samcy-1136c.firebasestorage.app",
+            messagingSenderId: "337821844780",
+            appId: "1:337821844780:web:4a31a07928e36a1f5a5889"
         };
 
-        // INIT
-        function init() {
-            // Lundi de cette semaine
-            const d = new Date(viewDate);
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day == 0 ? -6 : 1);
-            viewDate.setDate(diff);
-            
-            // Si on charge pour la première fois, on prend la date d'aujourd'hui
-            selDate = new Date().toISOString().split('T')[0];
-            switchUser(user);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- GESTION UTILISATEUR ---
+        let currentUser = localStorage.getItem('samcy_user');
+        if (!currentUser) {
+            currentUser = prompt("Qui es-tu ? (samia ou quincy)").toLowerCase().trim();
+            localStorage.setItem('samcy_user', currentUser);
+        }
+        document.getElementById('user-name').innerText = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
+
+        window.switchIdentity = () => {
+            localStorage.removeItem('samcy_user');
+            location.reload();
         }
 
-        function save() { localStorage.setItem('fit_final_v3', JSON.stringify(db)); render(); }
+        // --- NAVIGATION ---
+        window.navTo = (pageId, btn) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
+            btn.classList.add('active');
+        };
 
-        // NAVIGATION
-        function nav(view) {
-            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
-            document.getElementById('view-' + view).classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('nav-' + view).classList.add('active');
-            render(); // Refresh data in view
-        }
-
-        function switchUser(u) {
-            user = u;
-            document.body.className = u === 'siana' ? 'theme-siana' : 'theme-mel';
-            document.getElementById('btn-siana').className = u==='siana' ? "px-4 py-2 rounded-full text-[10px] font-black uppercase transition bg-pink-500 text-white shadow" : "px-4 py-2 rounded-full text-[10px] font-black uppercase transition text-gray-400";
-            document.getElementById('btn-mel').className = u==='mel' ? "px-4 py-2 rounded-full text-[10px] font-black uppercase transition bg-purple-500 text-white shadow" : "px-4 py-2 rounded-full text-[10px] font-black uppercase transition text-gray-400";
-            document.documentElement.style.setProperty('--primary', u==='siana'?'#ec4899':'#8b5cf6');
-            document.documentElement.style.setProperty('--primary-soft', u==='siana'?'#fbcfe8':'#ddd6fe');
-            render();
-        }
-
-        function changeWeek(dir) {
-            viewDate.setDate(viewDate.getDate() + (dir * 7));
-            render();
-        }
-
-        // RENDER LOGIC
-        function render() {
-            const ud = db[user];
-            
-            // Header
-            const now = new Date();
-            document.getElementById('header-date').innerText = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
-
-            // Calendar Grid
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
-            document.getElementById('month-label').innerText = viewDate.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
-
-            let tempD = new Date(viewDate);
-            for(let i=0; i<7; i++) {
-                const iso = tempD.toISOString().split('T')[0];
-                const dayNum = tempD.getDate();
-                const dayName = tempD.toLocaleDateString('fr-FR', {weekday:'short'}).replace('.','');
-                const isSel = iso === selDate;
-                const hasData = ud.plan[iso] || (ud.workouts[iso] && ud.workouts[iso].length > 0);
-
-                grid.innerHTML += `
-                    <div onclick="selDate='${iso}'; render()" class="cal-day cursor-pointer ${isSel ? 'active' : ''} ${hasData && !isSel ? 'bg-white' : ''}">
-                        <span class="uppercase text-[10px] opacity-60 mb-0.5">${dayName}</span>
-                        <span class="text-base">${dayNum}</span>
-                        ${hasData ? `<div class="cal-dot"></div>` : ''}
-                    </div>`;
-                tempD.setDate(tempD.getDate()+1);
+        // --- 1. MOODS ---
+        window.changeMood = async (person) => {
+            if (person !== currentUser) return alert("Tu ne peux pas changer l'humeur de " + person + " !");
+            const emojis = ['😍','😊','☁️','😤','😴','🤲','💍','☕'];
+            const choice = prompt("Choisis ton humeur :\n" + emojis.join(" "));
+            if (emojis.includes(choice)) {
+                await setDoc(doc(db, "moods", person), { emoji: choice });
             }
+        };
+        onSnapshot(doc(db, "moods", "samia"), d => { if(d.exists()) document.getElementById('mood-samia').innerText = d.data().emoji });
+        onSnapshot(doc(db, "moods", "quincy"), d => { if(d.exists()) document.getElementById('mood-quincy').innerText = d.data().emoji });
 
-            // Dash Data
-            const planTxt = ud.plan[selDate] || "Rien de prévu";
-            document.getElementById('plan-dash').innerText = planTxt;
-            
-            const slp = ud.sleep[selDate] || {};
-            document.getElementById('sleep-start').value = slp.start || "";
-            document.getElementById('sleep-end').value = slp.end || "";
-            document.getElementById('val-sleep').innerText = slp.total || "--";
-            
-            document.getElementById('val-water').innerText = ud.water[selDate] || 0;
-            document.getElementById('val-steps').value = ud.steps[selDate] || "";
-
-            // Sport View Data
-            document.getElementById('sport-date-lbl').innerText = new Date(selDate).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
-            document.getElementById('input-plan-name').value = ud.plan[selDate] || "";
-            
-            const listS = document.getElementById('list-sport');
-            const exos = ud.workouts[selDate] || [];
-            if(exos.length === 0) listS.innerHTML = `<div class="text-center py-6 opacity-30 text-xs font-bold uppercase">Aucun exercice</div>`;
-            else {
-                listS.innerHTML = exos.map((ex, idx) => `
-                    <div class="card p-3 flex justify-between items-center relative group">
-                        <div>
-                            <div class="text-[9px] font-black uppercase text-gray-400">${ex.sets} séries x ${ex.reps}</div>
-                            <div class="font-bold text-gray-800 uppercase">${ex.name}</div>
-                        </div>
-                        <div class="font-black text-lg text-pink-500">
-                            ${ex.type==='normal' ? ex.w1+'kg' : ex.start+'➔'+ex.end+'kg'}
-                        </div>
-                        <button onclick="delExo(${idx})" class="absolute right-0 top-0 h-full w-12 bg-red-500 text-white rounded-r-2xl hidden group-hover:flex items-center justify-center font-bold">X</button>
-                    </div>
-                `).join('');
+        // --- 2. CALENDRIER ---
+        window.addCalendarEvent = async () => {
+            const title = prompt("Titre de l'événement :");
+            const date = prompt("Date (ex: 20 Mars) :");
+            if (title && date) {
+                await addDoc(collection(db, "calendar"), { title, date, done: false, createdAt: Date.now() });
             }
+        };
 
-            // Nutri View Data
-            const listF = document.getElementById('list-food');
-            const foods = ud.food.filter(f => f.d === selDate);
-            listF.innerHTML = foods.map((f, idx) => `
-                <div class="card p-3 flex justify-between items-center text-xs">
-                    <span class="font-bold uppercase">${f.n}</span>
-                    <div class="text-right">
-                        <div class="font-black">${f.k} kcal</div>
-                        <div class="text-emerald-500 font-bold">${f.p}g prot</div>
+        window.toggleEvent = async (id, currentState) => {
+            await updateDoc(doc(db, "calendar", id), { done: !currentState });
+        };
+
+        onSnapshot(query(collection(db, "calendar"), orderBy("createdAt", "desc")), (snap) => {
+            const list = document.getElementById('calendar-list');
+            list.innerHTML = "";
+            if (snap.empty) list.innerHTML = '<p class="text-center text-gray-300 text-xs py-4">Rien de prévu...</p>';
+            
+            snap.forEach(docSnap => {
+                const item = docSnap.data();
+                list.innerHTML += `
+                    <div class="flex items-center justify-between p-3 rounded-xl border ${item.done ? 'bg-gray-100 opacity-50' : 'bg-[#FAF9F6] border-[#E6DCD3]'}">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleEvent('${docSnap.id}', ${item.done})" class="w-5 h-5 accent-[#A68A64]">
+                            <div>
+                                <p class="text-sm font-bold ${item.done ? 'line-through text-gray-400' : 'text-[#4A443F]'}">${item.title}</p>
+                                <p class="text-[10px] text-gray-400">${item.date}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteDocItem('calendar', '${docSnap.id}')" class="text-gray-300"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
-                </div>
-            `).join('');
+                `;
+            });
+        });
 
-            // Body View Data
-            const listB = document.getElementById('list-body');
-            listB.innerHTML = ud.body.slice(0,5).map(b => `
-                <div class="card p-3 text-xs flex justify-between">
-                    <span class="font-bold text-gray-400">${b.d}</span>
-                    <span class="font-black">${b.w} kg</span>
-                    <span>${b.waist || '-'} / ${b.hips || '-'} cm</span>
-                </div>
-            `).join('');
-        }
+        // --- 3. SPIRITUEL ---
+        let currentDeenView = currentUser;
+        const today = new Date().toISOString().split('T')[0];
 
-        // --- ACTIONS ---
+        window.setDeenView = (user) => {
+            currentDeenView = user;
+            document.getElementById('tab-deen-samia').className = user === 'samia' ? 'px-4 py-1 rounded-full text-xs font-bold bg-[#A68A64] text-white' : 'px-4 py-1 rounded-full text-xs font-bold bg-white text-gray-400';
+            document.getElementById('tab-deen-quincy').className = user === 'quincy' ? 'px-4 py-1 rounded-full text-xs font-bold bg-[#A68A64] text-white' : 'px-4 py-1 rounded-full text-xs font-bold bg-white text-gray-400';
+            loadDeen();
+        };
 
-        // COPIER TOUTE LA SEMAINE
-        function copyEntireWeek() {
-            // Monday of visible week
-            let targetMonday = new Date(viewDate);
-            // Monday of previous week
-            let sourceMonday = new Date(targetMonday);
-            sourceMonday.setDate(sourceMonday.getDate() - 7);
-
-            if(!confirm("Copier tout le programme de la semaine dernière sur celle-ci ?")) return;
-
-            // Loop 7 days
-            for(let i=0; i<7; i++) {
-                let tDate = new Date(targetMonday); tDate.setDate(tDate.getDate() + i);
-                let sDate = new Date(sourceMonday); sDate.setDate(sDate.getDate() + i);
+        const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha', 'Coran', 'Duas'];
+        
+        function loadDeen() {
+            onSnapshot(doc(db, "spiritual", `${today}_${currentDeenView}`), (docSnap) => {
+                const data = docSnap.exists() ? docSnap.data() : {};
+                const container = document.getElementById('prayer-list');
+                container.innerHTML = "";
                 
-                let tIso = tDate.toISOString().split('T')[0];
-                let sIso = sDate.toISOString().split('T')[0];
-
-                // Copy Plan (Legday etc)
-                if(db[user].plan[sIso]) {
-                    db[user].plan[tIso] = db[user].plan[sIso];
-                }
-                // Copy Workouts (Exercises)
-                if(db[user].workouts[sIso]) {
-                    db[user].workouts[tIso] = JSON.parse(JSON.stringify(db[user].workouts[sIso]));
-                }
-            }
-            save();
-            alert("Planning copié ! 🔥");
+                prayers.forEach(p => {
+                    const isDone = data[p] || false;
+                    container.innerHTML += `
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                            <span class="text-sm font-medium ${isDone ? 'text-[#A68A64]' : 'text-gray-600'}">${p}</span>
+                            <div class="relative w-6 h-6">
+                                <input type="checkbox" ${isDone ? 'checked' : ''} 
+                                    onchange="toggleDeen('${p}', ${isDone})"
+                                    class="w-6 h-6 appearance-none border-2 border-gray-300 rounded-full checked:bg-[#A68A64] checked:border-[#A68A64] transition cursor-pointer">
+                                <i class="fa-solid fa-check text-white text-xs absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none ${isDone ? 'block' : 'hidden'}"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
         }
-
-        // Dash
-        function saveSleep() {
-            const s = document.getElementById('sleep-start').value;
-            const e = document.getElementById('sleep-end').value;
-            if(s && e) {
-                let d1 = new Date("2000-01-01 "+s);
-                let d2 = new Date("2000-01-01 "+e);
-                if(d2 < d1) d2.setDate(d2.getDate()+1);
-                const diff = (d2-d1)/1000/60/60;
-                const h = Math.floor(diff);
-                const m = Math.round((diff-h)*60);
-                db[user].sleep[selDate] = { start:s, end:e, total: `${h}h${m<10?'0':''}${m}` };
-                save();
-            }
-        }
-        function updWater(v) { let c = db[user].water[selDate]||0; c+=v; if(c<0)c=0; db[user].water[selDate]=c; save(); }
-        function saveSteps() { db[user].steps[selDate] = document.getElementById('val-steps').value; save(); }
-
-        // Sport
-        function savePlanName() { db[user].plan[selDate] = document.getElementById('input-plan-name').value; save(); }
-        function setPlanName(n) { document.getElementById('input-plan-name').value = n; savePlanName(); }
         
-        function openExoModal() { document.getElementById('modal-exo').classList.remove('hidden'); }
-        function setExType(t) {
-            exType = t;
-            const n = document.getElementById('btn-t-normal');
-            const p = document.getElementById('btn-t-prog');
-            if(t==='normal') {
-                n.className="flex-1 py-2 text-[10px] font-bold rounded bg-white shadow text-pink-500 transition";
-                p.className="flex-1 py-2 text-[10px] font-bold rounded text-gray-400 transition";
-                document.getElementById('w-normal').classList.remove('hidden');
-                document.getElementById('w-prog').classList.add('hidden');
-            } else {
-                n.className="flex-1 py-2 text-[10px] font-bold rounded text-gray-400 transition";
-                p.className="flex-1 py-2 text-[10px] font-bold rounded bg-white shadow text-pink-500 transition";
-                document.getElementById('w-normal').classList.add('hidden');
-                document.getElementById('w-prog').classList.remove('hidden');
-            }
+        window.toggleDeen = async (item, state) => {
+            if (currentDeenView !== currentUser) return alert("Tu ne peux pas cocher pour l'autre !");
+            await setDoc(doc(db, "spiritual", `${today}_${currentUser}`), { [item]: !state }, { merge: true });
         }
-        function addExo() {
-            const name = document.getElementById('ex-name').value;
-            if(!name) return;
-            const sets = document.getElementById('ex-sets').value;
-            const reps = document.getElementById('ex-reps').value;
-            let data = { name, sets, reps, type: exType };
-            if(exType==='normal') data.w1 = document.getElementById('ex-w1').value;
-            else { data.start = document.getElementById('ex-start').value; data.end = document.getElementById('ex-end').value; }
-            
-            if(!db[user].workouts[selDate]) db[user].workouts[selDate] = [];
-            db[user].workouts[selDate].push(data);
-            
-            document.getElementById('ex-name').value = '';
-            document.getElementById('modal-exo').classList.add('hidden');
-            save();
-        }
-        function delExo(i) { if(confirm('Supprimer ?')) { db[user].workouts[selDate].splice(i,1); save(); } }
-        
-        // Nutri
-        function addFood() {
-            const n = document.getElementById('food-name').value;
-            const k = document.getElementById('food-cal').value || 0;
-            const p = document.getElementById('food-prot').value || 0;
-            if(n) {
-                db[user].food.unshift({ n, k, p, d: selDate });
-                document.getElementById('food-name').value='';
-                save();
+        loadDeen(); // Init
+
+        // --- 4. COUPLE (Journal & Sondages) ---
+        window.createPoll = async () => {
+            const question = prompt("Question du sondage ?");
+            if(question) {
+                await addDoc(collection(db, "polls"), { 
+                    question, 
+                    votesSamia: false, 
+                    votesQuincy: false,
+                    createdAt: Date.now() 
+                });
             }
+        };
+
+        window.votePoll = async (id, voteType) => { // voteType: 'yes' or 'no'
+             // Simplification: Toggle vote. Dans une vraie app on ferait mieux.
+             const pollRef = doc(db, "polls", id);
+             if (currentUser === 'samia') await updateDoc(pollRef, { votesSamia: voteType });
+             if (currentUser === 'quincy') await updateDoc(pollRef, { votesQuincy: voteType });
+        };
+
+        onSnapshot(query(collection(db, "polls"), orderBy("createdAt", "desc")), snap => {
+            const div = document.getElementById('polls-list');
+            div.innerHTML = "";
+            snap.forEach(d => {
+                const p = d.data();
+                div.innerHTML += `
+                    <div class="p-3 bg-white rounded-xl border border-gray-100 text-sm">
+                        <p class="font-bold mb-2">${p.question}</p>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>S: ${p.votesSamia ? '✅' : '⏳'}</span>
+                            <span>Q: ${p.votesQuincy ? '✅' : '⏳'}</span>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                             <button onclick="votePoll('${d.id}', true)" class="flex-1 bg-green-50 text-green-600 py-1 rounded">Oui</button>
+                             <button onclick="votePoll('${d.id}', false)" class="flex-1 bg-red-50 text-red-600 py-1 rounded">Non</button>
+                             <button onclick="deleteDocItem('polls', '${d.id}')" class="text-gray-300 px-2"><i class="fa-solid fa-times"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        window.addJournalEntry = async (type) => {
+            const txt = prompt(type === 'love' ? "Qu'est-ce qui va bien ?" : "Qu'est-ce qu'on doit améliorer ?");
+            if (txt) {
+                await addDoc(collection(db, "journal"), { text: txt, type, user: currentUser, createdAt: Date.now() });
+            }
+        };
+
+        onSnapshot(query(collection(db, "journal"), orderBy("createdAt", "desc")), snap => {
+            const div = document.getElementById('journal-list');
+            div.innerHTML = "";
+            snap.forEach(d => {
+                const j = d.data();
+                div.innerHTML += `
+                    <div class="p-3 rounded-xl mb-2 text-sm ${j.type === 'love' ? 'journal-good' : 'journal-bad'} relative group">
+                        <p class="font-bold text-xs opacity-50 uppercase mb-1">${j.user}</p>
+                        <p>${j.text}</p>
+                        <button onclick="deleteDocItem('journal', '${d.id}')" class="absolute top-2 right-2 text-gray-300 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        });
+
+        // --- 5. WISHLIST ---
+        let currentWishTab = currentUser;
+        window.setWishTab = (user) => {
+            currentWishTab = user;
+            document.getElementById('wtab-samia').className = user === 'samia' ? 'flex-1 pb-2 text-sm font-bold text-[#A68A64] border-b-2 border-[#A68A64]' : 'flex-1 pb-2 text-sm font-bold text-gray-400';
+            document.getElementById('wtab-quincy').className = user === 'quincy' ? 'flex-1 pb-2 text-sm font-bold text-[#A68A64] border-b-2 border-[#A68A64]' : 'flex-1 pb-2 text-sm font-bold text-gray-400';
+            renderWishlist();
+        };
+
+        let allWishes = [];
+        onSnapshot(collection(db, "wishlist"), snap => {
+            allWishes = [];
+            snap.forEach(d => allWishes.push({id: d.id, ...d.data()}));
+            renderWishlist();
+        });
+
+        function renderWishlist() {
+            const grid = document.getElementById('wishlist-grid');
+            grid.innerHTML = "";
+            const filtered = allWishes.filter(w => w.owner === currentWishTab);
+            
+            if(filtered.length === 0) grid.innerHTML = "<p class='col-span-2 text-center text-xs text-gray-400'>Liste vide</p>";
+
+            filtered.forEach(w => {
+                grid.innerHTML += `
+                    <div class="wish-item">
+                        <img src="${w.img}" class="wish-img" onerror="this.src='https://via.placeholder.com/150'">
+                        <div class="p-2">
+                            <p class="font-bold text-xs truncate">${w.name}</p>
+                            <div class="flex justify-between items-center mt-1">
+                                <span class="text-[10px] text-gray-500">${w.price}€</span>
+                                <button onclick="deleteDocItem('wishlist', '${w.id}')" class="text-red-300"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
-        // Body
-        function saveBody() {
-            const w = document.getElementById('body-w').value;
-            const waist = document.getElementById('body-waist').value;
-            const hips = document.getElementById('body-hips').value;
-            if(w) {
-                db[user].body.unshift({ w, waist, hips, d: selDate });
-                save();
+        window.addToWishlist = async () => {
+            if (currentWishTab !== currentUser) return alert("Tu ne peux pas ajouter à sa liste !");
+            const name = prompt("Nom de l'objet ?");
+            const price = prompt("Prix approximatif ?");
+            const img = prompt("Lien de l'image (URL) - Copie depuis Google Images :");
+            
+            if(name) {
+                await addDoc(collection(db, "wishlist"), {
+                    name, price: price || "0", img: img || "", owner: currentUser
+                });
             }
-        }
+        };
 
-        init();
+        // --- GLOBAL DELETE ---
+        window.deleteDocItem = async (col, id) => {
+            if(confirm("Supprimer ?")) await deleteDoc(doc(db, col, id));
+        };
+
     </script>
 </body>
 </html>

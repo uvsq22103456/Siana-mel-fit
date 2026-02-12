@@ -89,11 +89,18 @@
         
         <section id="view-dash" class="p-5 space-y-4 fade-in">
             <div class="card p-5">
-                <div class="flex justify-between items-center mb-4 px-1">
-                    <button onclick="changeWeek(-1)" class="text-gray-400 p-2">←</button>
-                    <span id="month-label" class="text-xs font-black uppercase tracking-widest">FÉVRIER</span>
-                    <button onclick="changeWeek(1)" class="text-gray-400 p-2">→</button>
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <button onclick="changeWeek(-1)" class="text-gray-400 p-2 text-xl">←</button>
+                    <div class="flex flex-col items-center">
+                        <span id="month-label" class="text-xs font-black uppercase tracking-widest">FÉVRIER</span>
+                    </div>
+                    <button onclick="changeWeek(1)" class="text-gray-400 p-2 text-xl">→</button>
                 </div>
+
+                <button onclick="copyEntireWeek()" class="w-full mb-4 py-2 bg-gray-50 hover:bg-pink-50 text-gray-400 hover:text-pink-500 rounded-lg text-[10px] font-bold uppercase transition flex items-center justify-center gap-2">
+                    <span>↺</span> Copier la semaine précédente ici
+                </button>
+
                 <div id="calendar-grid" class="grid grid-cols-7 gap-2 mb-4"></div>
                 
                 <div class="border-t border-gray-100 pt-3 flex justify-between items-end">
@@ -139,9 +146,6 @@
         <section id="view-sport" class="p-5 space-y-4 hidden fade-in">
             <div class="flex justify-between items-center">
                 <h2 class="text-lg font-black uppercase">Séance du <span id="sport-date-lbl" class="text-pink-500">...</span></h2>
-                <button onclick="copyLastWeek()" class="text-[10px] font-bold bg-white px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm active:scale-95 flex items-center gap-1">
-                    <span>↺</span> Copier J-7
-                </button>
             </div>
 
             <div class="card p-4">
@@ -262,7 +266,7 @@
         let exType = 'normal';
 
         // INIT DB
-        let db = JSON.parse(localStorage.getItem('fit_final_v2')) || {
+        let db = JSON.parse(localStorage.getItem('fit_final_v3')) || {
             siana: { plan:{}, sleep:{}, water:{}, steps:{}, workouts:{}, food:[], body:[] },
             mel: { plan:{}, sleep:{}, water:{}, steps:{}, workouts:{}, food:[], body:[] }
         };
@@ -280,7 +284,7 @@
             switchUser(user);
         }
 
-        function save() { localStorage.setItem('fit_final_v2', JSON.stringify(db)); render(); }
+        function save() { localStorage.setItem('fit_final_v3', JSON.stringify(db)); render(); }
 
         // NAVIGATION
         function nav(view) {
@@ -397,6 +401,37 @@
 
         // --- ACTIONS ---
 
+        // COPIER TOUTE LA SEMAINE
+        function copyEntireWeek() {
+            // Monday of visible week
+            let targetMonday = new Date(viewDate);
+            // Monday of previous week
+            let sourceMonday = new Date(targetMonday);
+            sourceMonday.setDate(sourceMonday.getDate() - 7);
+
+            if(!confirm("Copier tout le programme de la semaine dernière sur celle-ci ?")) return;
+
+            // Loop 7 days
+            for(let i=0; i<7; i++) {
+                let tDate = new Date(targetMonday); tDate.setDate(tDate.getDate() + i);
+                let sDate = new Date(sourceMonday); sDate.setDate(sDate.getDate() + i);
+                
+                let tIso = tDate.toISOString().split('T')[0];
+                let sIso = sDate.toISOString().split('T')[0];
+
+                // Copy Plan (Legday etc)
+                if(db[user].plan[sIso]) {
+                    db[user].plan[tIso] = db[user].plan[sIso];
+                }
+                // Copy Workouts (Exercises)
+                if(db[user].workouts[sIso]) {
+                    db[user].workouts[tIso] = JSON.parse(JSON.stringify(db[user].workouts[sIso]));
+                }
+            }
+            save();
+            alert("Planning copié ! 🔥");
+        }
+
         // Dash
         function saveSleep() {
             const s = document.getElementById('sleep-start').value;
@@ -454,19 +489,6 @@
         }
         function delExo(i) { if(confirm('Supprimer ?')) { db[user].workouts[selDate].splice(i,1); save(); } }
         
-        function copyLastWeek() {
-            const d = new Date(selDate);
-            d.setDate(d.getDate() - 7);
-            const isoPrev = d.toISOString().split('T')[0];
-            const prev = db[user].workouts[isoPrev];
-            if(!prev || prev.length === 0) { alert('Rien trouvé le '+isoPrev); return; }
-            if(confirm('Copier la séance du '+isoPrev+' ?')) {
-                db[user].workouts[selDate] = JSON.parse(JSON.stringify(prev));
-                if(db[user].plan[isoPrev]) db[user].plan[selDate] = db[user].plan[isoPrev];
-                save();
-            }
-        }
-
         // Nutri
         function addFood() {
             const n = document.getElementById('food-name').value;

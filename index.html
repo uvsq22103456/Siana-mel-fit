@@ -3,155 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Siana & Mel • Flow</title>
+    <title>Matcha Flow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #F2F4F1; /* Matcha Milk */
-            --card: rgba(255, 255, 255, 0.7);
-            --text: #374151;
-            --accent: #8FA887; /* Matcha Green */
-            --accent-soft: #DDE5DB;
+            --bg: #F7F7F5; /* Crème */
+            --matcha: #A8B794; /* Vert */
+            --matcha-dark: #5F6F4E;
+            --text: #44403C;
         }
-
-        body { 
-            font-family: 'Outfit', sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text);
-            height: 100dvh;
-            overflow: hidden;
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
+        
+        /* Checkbox stylée */
+        input[type="checkbox"]:checked + div {
+            text-decoration: line-through;
+            opacity: 0.5;
         }
-
-        /* Glassmorphism Soft */
-        .glass-card {
-            background: var(--card);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 32px;
-            box-shadow: 0 8px 32px rgba(143, 168, 135, 0.1);
+        input[type="checkbox"]:checked {
+            background-color: var(--matcha);
+            border-color: var(--matcha);
         }
-
-        .btn-action {
-            background: #2D302E;
-            color: white;
-            border-radius: 20px;
-            transition: transform 0.1s;
-        }
-        .btn-action:active { transform: scale(0.98); }
-
-        /* Hide scrollbar */
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .btn-workout.active {
+            background-color: var(--matcha-dark);
+            color: white;
+            border-color: var(--matcha-dark);
+        }
     </style>
 </head>
-<body class="flex flex-col p-6 safe-pb">
+<body class="flex flex-col h-[100dvh] p-6 max-w-md mx-auto">
 
-    <header class="flex justify-between items-center mb-6 pt-4">
+    <header class="flex justify-between items-end mb-8 pt-4">
         <div>
-            <h1 class="text-2xl font-medium tracking-tight text-gray-800">Hello <span class="text-[#8FA887]">Siana</span>,</h1>
-            <p class="text-xs text-gray-400 font-medium uppercase tracking-widest mt-1">Mardi • Phase Folliculaire 🌸</p>
+            <p class="text-xs font-bold text-gray-400 tracking-widest uppercase mb-1">Hello Girl ✨</p>
+            <div class="flex bg-white rounded-full p-1 shadow-sm border border-gray-200">
+                <button onclick="setUser('siana')" id="btn-siana" class="px-4 py-1.5 rounded-full text-xs font-bold transition bg-[#A8B794] text-white">Siana</button>
+                <button onclick="setUser('mel')" id="btn-mel" class="px-4 py-1.5 rounded-full text-xs font-bold transition text-gray-400 hover:bg-gray-50">Mel</button>
+            </div>
         </div>
-        <div class="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100">
-            <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
+        <div class="text-right">
+            <h1 class="text-4xl font-light text-[#5F6F4E]" id="day-display">...</h1>
+            <p class="text-xs text-gray-400 uppercase tracking-widest" id="date-display">...</p>
         </div>
     </header>
 
-    <main class="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar pb-20">
+    <main class="flex-1 overflow-hidden flex flex-col">
+        <p class="text-sm font-medium mb-3 ml-1">On fait quoi aujourd'hui ?</p>
         
-        <div class="glass-card p-6 relative overflow-hidden">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-[#8FA887]/20 rounded-full blur-3xl"></div>
+        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-4" id="workout-menu">
+            </div>
+
+        <div id="workout-container" class="bg-white rounded-[30px] p-6 shadow-sm border border-gray-100 flex-1 overflow-y-auto hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="current-title" class="text-xl font-medium text-[#5F6F4E]">Titre</h2>
+                <span class="text-xs bg-[#F2F4F1] px-2 py-1 rounded text-gray-500" id="current-duration">45 min</span>
+            </div>
+            <div id="exercise-list" class="space-y-4">
+                </div>
             
-            <div class="flex justify-between items-start relative z-10">
-                <div>
-                    <span class="inline-block px-3 py-1 bg-white/80 rounded-full text-[10px] font-bold uppercase tracking-wider text-[#8FA887] mb-3 shadow-sm">Programme du jour</span>
-                    <h2 class="text-3xl font-light mb-1">Pilates <br><span class="font-medium italic">Sculpt</span></h2>
-                    <div class="flex items-center gap-2 text-gray-500 text-xs font-medium mt-2">
-                        <i data-lucide="clock" class="w-3 h-3"></i> 45 min
-                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                        <i data-lucide="flame" class="w-3 h-3"></i> Burn Focus
-                    </div>
-                </div>
-                <div class="h-14 w-14 rounded-full bg-[#2D302E] text-white flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition">
-                    <i data-lucide="play" class="w-6 h-6 ml-1"></i>
-                </div>
-            </div>
-
-            <div class="mt-6 space-y-3">
-                <div class="flex items-center gap-3 p-3 bg-white/40 rounded-2xl border border-white/50">
-                    <div class="h-8 w-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold shadow-sm">1</div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium">Hundred Beats</p>
-                        <p class="text-[10px] text-gray-400 uppercase">3 séries • 60 sec</p>
-                    </div>
-                    <input type="checkbox" class="w-5 h-5 accent-[#8FA887] rounded-full cursor-pointer">
-                </div>
-                <div class="flex items-center gap-3 p-3 bg-white/40 rounded-2xl border border-white/50">
-                    <div class="h-8 w-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold shadow-sm">2</div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium">Glute Bridges</p>
-                        <p class="text-[10px] text-gray-400 uppercase">4 séries • 15 reps</p>
-                    </div>
-                    <input type="checkbox" class="w-5 h-5 accent-[#8FA887] rounded-full cursor-pointer">
-                </div>
-            </div>
+            <button onclick="finishSession()" class="w-full mt-8 py-4 bg-[#A8B794] text-white rounded-2xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#A8B794]/30 active:scale-95 transition">
+                Terminer la séance 🎉
+            </button>
         </div>
 
-        <div class="glass-card p-5">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold uppercase text-gray-400 tracking-wider">Manger pour ton cycle</span>
-                <i data-lucide="sparkles" class="w-3 h-3 text-yellow-500"></i>
-            </div>
-            <div class="flex gap-4">
-                <div class="h-20 w-20 rounded-2xl bg-gray-200 bg-cover bg-center shadow-inner" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop');"></div>
-                <div class="flex-1 flex flex-col justify-center">
-                    <h3 class="font-medium text-lg leading-tight">Bowl Quinoa & Avocat</h3>
-                    <p class="text-xs text-gray-500 mt-1">Riche en magnésium, parfait pour la phase actuelle.</p>
-                </div>
-            </div>
-            <button class="w-full mt-4 py-3 bg-white border border-gray-100 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition">Voir la recette</button>
+        <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-gray-300">
+            <i data-lucide="dumbbell" class="w-12 h-12 mb-2 opacity-50"></i>
+            <p class="text-sm">Choisis une séance en haut 👆</p>
         </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <div class="glass-card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-95 transition" onclick="toggleState(this)">
-                <i data-lucide="glass-water" class="w-6 h-6 text-blue-400"></i>
-                <span class="text-[10px] font-bold uppercase text-gray-400">Eau (+25cl)</span>
-            </div>
-            <div class="glass-card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-95 transition" onclick="toggleState(this)">
-                <i data-lucide="moon" class="w-6 h-6 text-indigo-400"></i>
-                <span class="text-[10px] font-bold uppercase text-gray-400">Sommeil (8h)</span>
-            </div>
-        </div>
-
     </main>
-
-    <nav class="fixed bottom-6 left-6 right-6 bg-[#2D302E] text-white rounded-[32px] p-2 shadow-2xl shadow-gray-400/50 z-50 flex justify-between items-center px-6 backdrop-blur-xl">
-        <button class="p-3 bg-white/10 rounded-full text-[#8FA887]"><i data-lucide="home" class="w-5 h-5"></i></button>
-        <button class="p-3 opacity-50 hover:opacity-100"><i data-lucide="calendar-heart" class="w-5 h-5"></i></button>
-        <button class="p-3 opacity-50 hover:opacity-100"><i data-lucide="shopping-bag" class="w-5 h-5"></i></button>
-        <button class="p-3 opacity-50 hover:opacity-100"><i data-lucide="settings-2" class="w-5 h-5"></i></button>
-    </nav>
 
     <script>
         lucide.createIcons();
 
-        // SIMULATION D'AUTOMATISATION
-        // Dans la vraie vie, tu mettrais ici un tableau avec tous leurs entrainements pré-écrits
-        const workouts = {
-            'Lundi': { title: 'Lower Body', type: 'Gym' },
-            'Mardi': { title: 'Pilates Sculpt', type: 'Mat' },
-            'Mercredi': { title: 'Rest & Stretch', type: 'Yoga' }
+        // 1. C'EST ICI QUE TU RENTRES LEURS PROGRAMMES
+        // Tu peux modifier le texte comme tu veux.
+        const DB = {
+            siana: [
+                {
+                    id: 'glutes', icon: '🍑', name: 'Focus Fessiers', time: '50 min',
+                    exos: [
+                        { name: 'Hip Thrust', sets: '4x12', weight: '40kg' },
+                        { name: 'Fentes Bulgares', sets: '3x10', weight: 'Haltères 8kg' },
+                        { name: 'Kickback Poulie', sets: '3x15', weight: '5kg' },
+                        { name: 'Abdos Plank', sets: '3x 1min', weight: 'Poids corps' }
+                    ]
+                },
+                {
+                    id: 'upper', icon: '💪', name: 'Haut du Corps', time: '40 min',
+                    exos: [
+                        { name: 'Tirage Vertical', sets: '4x10', weight: '25kg' },
+                        { name: 'Rowing', sets: '4x10', weight: '20kg' },
+                        { name: 'Élévations Lat.', sets: '3x15', weight: '4kg' }
+                    ]
+                },
+                {
+                    id: 'cardio', icon: '💦', name: 'Cardio & Abs', time: '30 min',
+                    exos: [
+                        { name: 'Tapis 12-3-30', sets: '30 min', weight: 'Inclinaison 12' },
+                        { name: 'Crunchs', sets: '4x20', weight: '-' },
+                        { name: 'Russian Twist', sets: '4x20', weight: '5kg' }
+                    ]
+                }
+            ],
+            mel: [
+                {
+                    id: 'pilates', icon: '🧘‍♀️', name: 'Pilates Flow', time: '45 min',
+                    exos: [
+                        { name: 'The Hundred', sets: '100 beats', weight: '-' },
+                        { name: 'Leg Circles', sets: '2x10', weight: '-' },
+                        { name: 'Rolling like a ball', sets: '10 reps', weight: '-' }
+                    ]
+                },
+                {
+                    id: 'fullbody', icon: '🔥', name: 'Full Body', time: '1h',
+                    exos: [
+                        { name: 'Squat', sets: '4x10', weight: '20kg' },
+                        { name: 'Pompes', sets: '3xMax', weight: '-' },
+                        { name: 'Burpees', sets: '3x10', weight: '-' }
+                    ]
+                }
+            ]
         };
-        
-        // Petit effet quand on clique sur l'eau
-        function toggleState(el) {
-            el.style.background = "rgba(255,255,255,0.9)";
-            setTimeout(() => {
-                el.style.background = "var(--card)";
-            }, 200);
+
+        let currentUser = 'siana';
+
+        // GESTION DATE
+        const now = new Date();
+        document.getElementById('day-display').innerText = now.toLocaleDateString('fr-FR', {weekday: 'long'});
+        document.getElementById('date-display').innerText = now.toLocaleDateString('fr-FR', {day: 'numeric', month: 'long'});
+
+        // FONCTIONS
+        function setUser(u) {
+            currentUser = u;
+            // Style boutons
+            document.getElementById('btn-siana').className = u === 'siana' ? "px-4 py-1.5 rounded-full text-xs font-bold transition bg-[#A8B794] text-white" : "px-4 py-1.5 rounded-full text-xs font-bold transition text-gray-400 hover:bg-gray-50";
+            document.getElementById('btn-mel').className = u === 'mel' ? "px-4 py-1.5 rounded-full text-xs font-bold transition bg-[#8b5cf6] text-white" : "px-4 py-1.5 rounded-full text-xs font-bold transition text-gray-400 hover:bg-gray-50";
+            
+            renderMenu();
+            // Reset view
+            document.getElementById('workout-container').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
         }
+
+        function renderMenu() {
+            const menu = document.getElementById('workout-menu');
+            menu.innerHTML = DB[currentUser].map((w, idx) => `
+                <button onclick="loadWorkout(${idx})" class="btn-workout flex-shrink-0 bg-white border border-gray-200 px-5 py-3 rounded-2xl flex flex-col items-center gap-1 min-w-[100px] transition hover:border-[#A8B794]">
+                    <span class="text-xl">${w.icon}</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider">${w.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function loadWorkout(index) {
+            const data = DB[currentUser][index];
+            
+            // UI Switch
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('workout-container').classList.remove('hidden');
+            
+            // Remplir infos
+            document.getElementById('current-title').innerText = data.name;
+            document.getElementById('current-duration').innerText = data.time;
+
+            // Générer la liste
+            const list = document.getElementById('exercise-list');
+            list.innerHTML = data.exos.map((ex, i) => `
+                <label class="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition select-none">
+                    <input type="checkbox" class="w-6 h-6 rounded-full border-2 border-gray-300 appearance-none cursor-pointer relative checked:bg-[#A8B794] checked:border-none transition">
+                    
+                    <div class="flex-1 transition-opacity duration-200">
+                        <p class="font-medium text-gray-800 text-sm">${ex.name}</p>
+                        <p class="text-xs text-gray-400 font-medium">${ex.sets} • ${ex.weight}</p>
+                    </div>
+                </label>
+            `).join('');
+
+            // Highlight bouton actif
+            document.querySelectorAll('.btn-workout').forEach((b, i) => {
+                if(i===index) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+        }
+
+        function finishSession() {
+            // Animation confetti ou simple alerte
+            const btn = document.querySelector('button[onclick="finishSession()"]');
+            btn.innerText = "Bien joué ! ✅";
+            btn.classList.replace('bg-[#A8B794]', 'bg-gray-800');
+            
+            setTimeout(() => {
+                document.getElementById('workout-container').classList.add('hidden');
+                document.getElementById('empty-state').classList.remove('hidden');
+                document.querySelectorAll('.btn-workout').forEach(b => b.classList.remove('active'));
+                btn.innerText = "TERMINER LA SÉANCE 🎉";
+                btn.classList.replace('bg-gray-800', 'bg-[#A8B794]');
+            }, 1500);
+        }
+
+        // Init
+        renderMenu();
+
     </script>
 </body>
 </html>

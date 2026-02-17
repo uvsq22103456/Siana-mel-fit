@@ -3,211 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Matcha Flow</title>
+    <title>Matcha PRO • Tracker & Creator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #F7F7F5; /* Crème */
-            --matcha: #A8B794; /* Vert */
-            --matcha-dark: #5F6F4E;
-            --text: #44403C;
+            --bg: #F5F7F4;
+            --matcha: #9BB08D;
+            --matcha-dark: #4A5D3F;
+            --cream: #FFFFFF;
+            --text: #333;
         }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 90px; }
         
-        /* Checkbox stylée */
-        input[type="checkbox"]:checked + div {
-            text-decoration: line-through;
-            opacity: 0.5;
-        }
-        input[type="checkbox"]:checked {
-            background-color: var(--matcha);
-            border-color: var(--matcha);
-        }
+        .card { background: var(--cream); border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(255,255,255,0.6); }
+        .btn-primary { background: var(--matcha-dark); color: white; border-radius: 16px; font-weight: 600; transition: 0.2s; }
+        .btn-primary:active { transform: scale(0.98); }
         
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .nav-item.active { color: var(--matcha-dark); }
+        .nav-item.active div { background: #E8EDE4; }
 
-        .btn-workout.active {
-            background-color: var(--matcha-dark);
-            color: white;
-            border-color: var(--matcha-dark);
-        }
+        /* Custom Inputs */
+        .input-clean { background: #F9FAF8; border-radius: 12px; padding: 12px; font-weight: 500; width: 100%; outline: none; border: 1px solid transparent; }
+        .input-clean:focus { border-color: var(--matcha); background: white; }
+
+        /* Tag Select */
+        .tag-select { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 6px 12px; border-radius: 20px; border: 1px solid #ddd; color: #aaa; transition: 0.2s; }
+        .tag-select.active { border-color: var(--matcha-dark); color: var(--matcha-dark); background: #E8EDE4; }
     </style>
 </head>
-<body class="flex flex-col h-[100dvh] p-6 max-w-md mx-auto">
+<body>
 
-    <header class="flex justify-between items-end mb-8 pt-4">
+    <header class="px-6 pt-8 pb-4 flex justify-between items-center bg-white sticky top-0 z-30 shadow-sm">
         <div>
-            <p class="text-xs font-bold text-gray-400 tracking-widest uppercase mb-1">Hello Girl ✨</p>
-            <div class="flex bg-white rounded-full p-1 shadow-sm border border-gray-200">
-                <button onclick="setUser('siana')" id="btn-siana" class="px-4 py-1.5 rounded-full text-xs font-bold transition bg-[#A8B794] text-white">Siana</button>
-                <button onclick="setUser('mel')" id="btn-mel" class="px-4 py-1.5 rounded-full text-xs font-bold transition text-gray-400 hover:bg-gray-50">Mel</button>
+            <div class="flex gap-2 mb-1">
+                <button onclick="switchUser('siana')" id="btn-siana" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#4A5D3F] text-white">Siana</button>
+                <button onclick="switchUser('mel')" id="btn-mel" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-gray-100 text-gray-400">Mel</button>
             </div>
+            <h1 class="text-xl font-bold text-[#4A5D3F]">Dashboard</h1>
         </div>
-        <div class="text-right">
-            <h1 class="text-4xl font-light text-[#5F6F4E]" id="day-display">...</h1>
-            <p class="text-xs text-gray-400 uppercase tracking-widest" id="date-display">...</p>
-        </div>
+        <button onclick="openLogModal()" class="h-10 w-10 bg-[#4A5D3F] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#4A5D3F]/30 active:scale-90 transition">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+        </button>
     </header>
 
-    <main class="flex-1 overflow-hidden flex flex-col">
-        <p class="text-sm font-medium mb-3 ml-1">On fait quoi aujourd'hui ?</p>
+    <main id="app-content" class="px-5 mt-4 space-y-6">
         
-        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-4" id="workout-menu">
-            </div>
-
-        <div id="workout-container" class="bg-white rounded-[30px] p-6 shadow-sm border border-gray-100 flex-1 overflow-y-auto hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="current-title" class="text-xl font-medium text-[#5F6F4E]">Titre</h2>
-                <span class="text-xs bg-[#F2F4F1] px-2 py-1 rounded text-gray-500" id="current-duration">45 min</span>
-            </div>
-            <div id="exercise-list" class="space-y-4">
+        <section id="view-home">
+            <div class="flex justify-between items-center mb-4 overflow-x-auto pb-2 gap-2 no-scrollbar" id="calendar-strip">
                 </div>
-            
-            <button onclick="finishSession()" class="w-full mt-8 py-4 bg-[#A8B794] text-white rounded-2xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#A8B794]/30 active:scale-95 transition">
-                Terminer la séance 🎉
-            </button>
-        </div>
 
-        <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-gray-300">
-            <i data-lucide="dumbbell" class="w-12 h-12 mb-2 opacity-50"></i>
-            <p class="text-sm">Choisis une séance en haut 👆</p>
-        </div>
+            <div class="card p-5 mb-6">
+                <h2 class="text-sm font-bold uppercase text-gray-400 mb-4 tracking-widest">Aujourd'hui</h2>
+                <div id="today-workouts" class="space-y-3">
+                    <p class="text-center text-gray-300 text-sm py-4 italic">Rien d'enregistré... Go train ! 💪</p>
+                </div>
+            </div>
+
+            <div class="card p-5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-sm font-bold uppercase text-gray-400 tracking-widest">Poids (Scale)</h2>
+                    <p class="text-xs text-gray-400 mt-1">Dernier : <span id="last-weight" class="font-bold text-gray-800">-</span></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="number" id="input-weight" placeholder="Kg" class="w-20 input-clean text-center font-bold">
+                    <button onclick="saveBodyWeight()" class="bg-[#9BB08D] text-white p-3 rounded-xl"><i data-lucide="check" class="w-4 h-4"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-stats" class="hidden">
+            <h2 class="text-xl font-bold text-[#4A5D3F] mb-4">Progression</h2>
+            
+            <div class="card p-5 mb-6">
+                <div class="mb-4">
+                    <label class="text-xs font-bold uppercase text-gray-400">Choisir un exercice</label>
+                    <select id="stats-select" onchange="updateChart()" class="w-full mt-2 p-3 rounded-xl bg-[#F5F7F4] font-bold text-gray-700 outline-none">
+                        <option value="Squat">Squat</option>
+                        <option value="Hip Thrust">Hip Thrust</option>
+                        <option value="Tractions">Tractions (Reps)</option>
+                        <option value="Muscle Up">Muscle Up</option>
+                        <option value="Poids">Poids de Corps</option>
+                    </select>
+                </div>
+                <div class="relative h-60 w-full">
+                    <canvas id="progressChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-insta" class="hidden">
+            <h2 class="text-xl font-bold text-[#4A5D3F] mb-4">Insta Planner 📸</h2>
+            
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="card p-4 bg-gradient-to-br from-[#9BB08D] to-[#4A5D3F] text-white">
+                    <span class="text-xs font-bold opacity-70 uppercase">Next Post</span>
+                    <p class="text-lg font-bold mt-1">Jeudi 18h</p>
+                </div>
+                <div class="card p-4">
+                    <span class="text-xs font-bold text-gray-400 uppercase">Idées en vrac</span>
+                    <p class="text-2xl font-bold mt-1 text-gray-800" id="ideas-count">0</p>
+                </div>
+            </div>
+
+            <div class="card p-5">
+                <h3 class="font-bold mb-4">Brainstorming</h3>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="insta-input" placeholder="Ex: Reel 'Gym vs Reality'..." class="input-clean">
+                    <button onclick="addInstaIdea()" class="bg-[#4A5D3F] text-white px-4 rounded-xl font-bold">+</button>
+                </div>
+                <div id="insta-list" class="space-y-2">
+                    </div>
+            </div>
+        </section>
+
     </main>
+
+    <div id="log-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-[32px] sm:rounded-[32px] p-6 h-[85vh] sm:h-auto overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-[#4A5D3F]">Ajouter un exo</h3>
+                <button onclick="closeLogModal()" class="p-2 bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold uppercase text-gray-400">Exercice</label>
+                    <input type="text" id="ex-name" placeholder="Nom (ex: Hip Thrust)" class="input-clean mt-1">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold uppercase text-gray-400">Type de progression</label>
+                    <div class="flex gap-2 mt-2 overflow-x-auto no-scrollbar">
+                        <button onclick="setMode('const')" id="mode-const" class="tag-select active">Constant</button>
+                        <button onclick="setMode('prog')" id="mode-prog" class="tag-select">Progressif 📈</button>
+                        <button onclick="setMode('body')" id="mode-body" class="tag-select">Bodyweight 🤸</button>
+                        <button onclick="setMode('cardio')" id="mode-cardio" class="tag-select">Cardio 🏃‍♀️</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="inp-sets">
+                        <label class="text-xs font-bold uppercase text-gray-400">Séries</label>
+                        <input type="number" id="val-sets" class="input-clean mt-1 text-center" placeholder="4">
+                    </div>
+                    <div id="inp-reps">
+                        <label class="text-xs font-bold uppercase text-gray-400">Reps / Temps</label>
+                        <input type="number" id="val-reps" class="input-clean mt-1 text-center" placeholder="10">
+                    </div>
+                </div>
+
+                <div id="block-weight" class="bg-[#F5F7F4] p-4 rounded-xl">
+                    <label class="text-xs font-bold uppercase text-gray-400 block mb-2 text-center">Charge (kg)</label>
+                    
+                    <div id="w-single" class="block">
+                        <input type="number" id="val-w1" placeholder="40" class="w-full text-center text-3xl font-bold bg-transparent outline-none text-[#4A5D3F]">
+                    </div>
+
+                    <div id="w-prog" class="hidden flex items-center justify-center gap-2">
+                        <input type="number" id="val-start" placeholder="Start" class="w-20 text-center text-xl font-bold bg-white rounded-lg p-2 outline-none">
+                        <span class="text-gray-400">➔</span>
+                        <input type="number" id="val-end" placeholder="End" class="w-20 text-center text-xl font-bold bg-white rounded-lg p-2 outline-none text-[#4A5D3F]">
+                    </div>
+                </div>
+
+                <button onclick="saveWorkout()" class="w-full btn-primary py-4 mt-4 shadow-lg shadow-[#4A5D3F]/20 text-lg">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md rounded-[24px] p-2 shadow-2xl shadow-[#4A5D3F]/10 border border-white flex justify-between px-6 z-40">
+        <button onclick="nav('home')" class="nav-item active flex flex-col items-center gap-1 p-2 w-14">
+            <div class="h-10 w-10 rounded-full flex items-center justify-center transition"><i data-lucide="layout-grid" class="w-5 h-5"></i></div>
+        </button>
+        <button onclick="nav('stats')" class="nav-item flex flex-col items-center gap-1 p-2 w-14">
+            <div class="h-10 w-10 rounded-full flex items-center justify-center transition"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
+        </button>
+        <button onclick="nav('insta')" class="nav-item flex flex-col items-center gap-1 p-2 w-14">
+            <div class="h-10 w-10 rounded-full flex items-center justify-center transition"><i data-lucide="instagram" class="w-5 h-5"></i></div>
+        </button>
+    </nav>
 
     <script>
         lucide.createIcons();
 
-        // 1. C'EST ICI QUE TU RENTRES LEURS PROGRAMMES
-        // Tu peux modifier le texte comme tu veux.
-        const DB = {
-            siana: [
-                {
-                    id: 'glutes', icon: '🍑', name: 'Focus Fessiers', time: '50 min',
-                    exos: [
-                        { name: 'Hip Thrust', sets: '4x12', weight: '40kg' },
-                        { name: 'Fentes Bulgares', sets: '3x10', weight: 'Haltères 8kg' },
-                        { name: 'Kickback Poulie', sets: '3x15', weight: '5kg' },
-                        { name: 'Abdos Plank', sets: '3x 1min', weight: 'Poids corps' }
-                    ]
-                },
-                {
-                    id: 'upper', icon: '💪', name: 'Haut du Corps', time: '40 min',
-                    exos: [
-                        { name: 'Tirage Vertical', sets: '4x10', weight: '25kg' },
-                        { name: 'Rowing', sets: '4x10', weight: '20kg' },
-                        { name: 'Élévations Lat.', sets: '3x15', weight: '4kg' }
-                    ]
-                },
-                {
-                    id: 'cardio', icon: '💦', name: 'Cardio & Abs', time: '30 min',
-                    exos: [
-                        { name: 'Tapis 12-3-30', sets: '30 min', weight: 'Inclinaison 12' },
-                        { name: 'Crunchs', sets: '4x20', weight: '-' },
-                        { name: 'Russian Twist', sets: '4x20', weight: '5kg' }
-                    ]
-                }
-            ],
-            mel: [
-                {
-                    id: 'pilates', icon: '🧘‍♀️', name: 'Pilates Flow', time: '45 min',
-                    exos: [
-                        { name: 'The Hundred', sets: '100 beats', weight: '-' },
-                        { name: 'Leg Circles', sets: '2x10', weight: '-' },
-                        { name: 'Rolling like a ball', sets: '10 reps', weight: '-' }
-                    ]
-                },
-                {
-                    id: 'fullbody', icon: '🔥', name: 'Full Body', time: '1h',
-                    exos: [
-                        { name: 'Squat', sets: '4x10', weight: '20kg' },
-                        { name: 'Pompes', sets: '3xMax', weight: '-' },
-                        { name: 'Burpees', sets: '3x10', weight: '-' }
-                    ]
-                }
-            ]
+        // --- CONFIG & STATE ---
+        let user = 'siana';
+        let currentMode = 'const';
+        let chartInstance = null;
+        
+        // Base de données simulée (localStorage en prod)
+        let db = JSON.parse(localStorage.getItem('matcha_pro_db')) || {
+            siana: { workouts: [], bodyweight: [], insta: [] },
+            mel: { workouts: [], bodyweight: [], insta: [] }
         };
 
-        let currentUser = 'siana';
+        function saveData() { localStorage.setItem('matcha_pro_db', JSON.stringify(db)); }
 
-        // GESTION DATE
-        const now = new Date();
-        document.getElementById('day-display').innerText = now.toLocaleDateString('fr-FR', {weekday: 'long'});
-        document.getElementById('date-display').innerText = now.toLocaleDateString('fr-FR', {day: 'numeric', month: 'long'});
-
-        // FONCTIONS
-        function setUser(u) {
-            currentUser = u;
-            // Style boutons
-            document.getElementById('btn-siana').className = u === 'siana' ? "px-4 py-1.5 rounded-full text-xs font-bold transition bg-[#A8B794] text-white" : "px-4 py-1.5 rounded-full text-xs font-bold transition text-gray-400 hover:bg-gray-50";
-            document.getElementById('btn-mel').className = u === 'mel' ? "px-4 py-1.5 rounded-full text-xs font-bold transition bg-[#8b5cf6] text-white" : "px-4 py-1.5 rounded-full text-xs font-bold transition text-gray-400 hover:bg-gray-50";
+        // --- NAVIGATION ---
+        function nav(view) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
             
-            renderMenu();
-            // Reset view
-            document.getElementById('workout-container').classList.add('hidden');
-            document.getElementById('empty-state').classList.remove('hidden');
+            // Highlight Nav
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // Simple hack pour trouver le bon btn
+            const icons = {'home':0, 'stats':1, 'insta':2};
+            document.querySelectorAll('.nav-item')[icons[view]].classList.add('active');
+
+            if(view === 'stats') updateChart();
+            if(view === 'insta') renderInsta();
         }
 
-        function renderMenu() {
-            const menu = document.getElementById('workout-menu');
-            menu.innerHTML = DB[currentUser].map((w, idx) => `
-                <button onclick="loadWorkout(${idx})" class="btn-workout flex-shrink-0 bg-white border border-gray-200 px-5 py-3 rounded-2xl flex flex-col items-center gap-1 min-w-[100px] transition hover:border-[#A8B794]">
-                    <span class="text-xl">${w.icon}</span>
-                    <span class="text-[10px] font-bold uppercase tracking-wider">${w.name}</span>
-                </button>
-            `).join('');
+        function switchUser(u) {
+            user = u;
+            document.getElementById('btn-siana').className = u==='siana' ? "text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#4A5D3F] text-white" : "text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-gray-100 text-gray-400";
+            document.getElementById('btn-mel').className = u==='mel' ? "text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#8b5cf6] text-white" : "text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-gray-100 text-gray-400";
+            renderHome();
+            updateChart(); // Refresh si on est sur la vue stats
+            renderInsta();
         }
 
-        function loadWorkout(index) {
-            const data = DB[currentUser][index];
+        // --- LOGIC: HOME ---
+        function renderHome() {
+            // Calendar Strip (Derniers 7 jours)
+            const strip = document.getElementById('calendar-strip');
+            strip.innerHTML = '';
+            const today = new Date();
             
-            // UI Switch
-            document.getElementById('empty-state').classList.add('hidden');
-            document.getElementById('workout-container').classList.remove('hidden');
-            
-            // Remplir infos
-            document.getElementById('current-title').innerText = data.name;
-            document.getElementById('current-duration').innerText = data.time;
+            for(let i=6; i>=0; i--) {
+                const d = new Date(); d.setDate(today.getDate() - i);
+                const isToday = i===0;
+                const isoDate = d.toISOString().split('T')[0];
+                const hasWorkout = db[user].workouts.some(w => w.date === isoDate);
 
-            // Générer la liste
-            const list = document.getElementById('exercise-list');
-            list.innerHTML = data.exos.map((ex, i) => `
-                <label class="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition select-none">
-                    <input type="checkbox" class="w-6 h-6 rounded-full border-2 border-gray-300 appearance-none cursor-pointer relative checked:bg-[#A8B794] checked:border-none transition">
-                    
-                    <div class="flex-1 transition-opacity duration-200">
-                        <p class="font-medium text-gray-800 text-sm">${ex.name}</p>
-                        <p class="text-xs text-gray-400 font-medium">${ex.sets} • ${ex.weight}</p>
+                strip.innerHTML += `
+                    <div class="flex flex-col items-center min-w-[50px] p-2 rounded-2xl ${isToday ? 'bg-[#4A5D3F] text-white shadow-lg' : 'bg-white border border-gray-100'}">
+                        <span class="text-[10px] font-bold uppercase opacity-60">${d.toLocaleDateString('fr-FR',{weekday:'short'})}</span>
+                        <span class="text-lg font-bold">${d.getDate()}</span>
+                        ${hasWorkout ? `<div class="w-1.5 h-1.5 rounded-full mt-1 ${isToday ? 'bg-white' : 'bg-[#9BB08D]'}"></div>` : ''}
                     </div>
-                </label>
-            `).join('');
+                `;
+            }
 
-            // Highlight bouton actif
-            document.querySelectorAll('.btn-workout').forEach((b, i) => {
-                if(i===index) b.classList.add('active');
-                else b.classList.remove('active');
+            // Today's Workouts
+            const isoToday = new Date().toISOString().split('T')[0];
+            const workouts = db[user].workouts.filter(w => w.date === isoToday);
+            const container = document.getElementById('today-workouts');
+            
+            if(workouts.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-300 text-sm py-4 italic">Rien d'enregistré... Go train ! 💪</p>`;
+            } else {
+                container.innerHTML = workouts.map(w => {
+                    let details = '';
+                    if(w.type === 'const') details = `${w.sets}x${w.reps} @ ${w.val1}kg`;
+                    else if(w.type === 'prog') details = `${w.sets}x${w.reps} • ${w.val1}kg -> ${w.val2}kg`;
+                    else if(w.type === 'body') details = `${w.sets}x${w.reps} reps ${w.val1 > 0 ? '+ ' + w.val1 + 'kg' : '(Poids corps)'}`;
+                    else details = `${w.val1} min • ${w.val2 || 0} km`;
+
+                    return `
+                    <div class="flex justify-between items-center bg-[#F5F7F4] p-3 rounded-xl border border-gray-200">
+                        <div>
+                            <p class="font-bold text-[#4A5D3F]">${w.name}</p>
+                            <p class="text-xs text-gray-500 font-medium">${details}</p>
+                        </div>
+                        <span class="text-lg">${w.type === 'cardio' ? '🏃‍♀️' : '🔥'}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            // Body Weight
+            const lastW = db[user].bodyweight[db[user].bodyweight.length-1];
+            document.getElementById('last-weight').innerText = lastW ? lastW.val + ' kg' : '--';
+        }
+
+        // --- LOGIC: MODAL & SAVING ---
+        function openLogModal() { document.getElementById('log-modal').classList.remove('hidden'); }
+        function closeLogModal() { document.getElementById('log-modal').classList.add('hidden'); }
+
+        function setMode(m) {
+            currentMode = m;
+            document.querySelectorAll('.tag-select').forEach(b => b.classList.remove('active'));
+            document.getElementById('mode-'+m).classList.add('active');
+
+            // Visibility Logic
+            const blockW = document.getElementById('block-weight');
+            const wSingle = document.getElementById('w-single');
+            const wProg = document.getElementById('w-prog');
+            const inpSets = document.getElementById('inp-sets');
+            const labelReps = document.querySelector('#inp-reps label');
+
+            blockW.classList.remove('hidden');
+            wSingle.classList.remove('hidden');
+            wProg.classList.add('hidden');
+            inpSets.classList.remove('hidden');
+            labelReps.innerText = "Reps";
+
+            if(m === 'const') { /* default */ }
+            else if(m === 'prog') {
+                wSingle.classList.add('hidden');
+                wProg.classList.remove('hidden');
+            }
+            else if(m === 'body') {
+                document.getElementById('val-w1').placeholder = "Lest (0 si vide)";
+            }
+            else if(m === 'cardio') {
+                document.getElementById('val-w1').placeholder = "Minutes";
+                labelReps.innerText = "Distance (km)";
+                inpSets.classList.add('hidden'); // Pas de séries en cardio basique
+            }
+        }
+
+        function saveWorkout() {
+            const name = document.getElementById('ex-name').value;
+            if(!name) return alert("Mets un nom à l'exo !");
+
+            const sets = document.getElementById('val-sets').value;
+            const reps = document.getElementById('val-reps').value;
+            
+            let val1 = 0, val2 = 0;
+
+            if(currentMode === 'prog') {
+                val1 = document.getElementById('val-start').value;
+                val2 = document.getElementById('val-end').value;
+            } else {
+                val1 = document.getElementById('val-w1').value;
+                // Si cardio, reps = distance
+                if(currentMode === 'cardio') val2 = reps; 
+            }
+
+            const entry = {
+                date: new Date().toISOString().split('T')[0],
+                name, type: currentMode, sets, reps, val1, val2
+            };
+
+            db[user].workouts.push(entry);
+            saveData();
+            closeLogModal();
+            renderHome();
+            
+            // Reset inputs
+            document.getElementById('ex-name').value = '';
+        }
+
+        function saveBodyWeight() {
+            const val = document.getElementById('input-weight').value;
+            if(val) {
+                db[user].bodyweight.push({ date: new Date().toISOString().split('T')[0], val });
+                saveData();
+                renderHome();
+                document.getElementById('input-weight').value = '';
+            }
+        }
+
+        // --- LOGIC: CHARTS (C'est là que ça devient pro) ---
+        function updateChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            const exoName = document.getElementById('stats-select').value;
+            
+            let dataPoints = [];
+            let labels = [];
+
+            if(exoName === 'Poids') {
+                db[user].bodyweight.forEach(entry => {
+                    labels.push(entry.date.slice(5)); // MM-DD
+                    dataPoints.push(entry.val);
+                });
+            } else {
+                // Filtrer les workouts par nom (match partiel)
+                const history = db[user].workouts.filter(w => w.name.toLowerCase().includes(exoName.toLowerCase()));
+                
+                history.forEach(w => {
+                    labels.push(w.date.slice(5));
+                    // Quelle valeur afficher ?
+                    if(w.type === 'prog') dataPoints.push(w.val2); // On affiche la perf max
+                    else if(w.type === 'body') dataPoints.push(w.reps); // On affiche les reps pour calisthenics
+                    else dataPoints.push(w.val1);
+                });
+            }
+
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: exoName === 'Poids' ? 'Poids (kg)' : 'Performance',
+                        data: dataPoints,
+                        borderColor: '#4A5D3F',
+                        backgroundColor: 'rgba(155, 176, 141, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4, // Courbe douce
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#4A5D3F',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: false, grid: { display: true, color: '#f0f0f0' } },
+                        x: { grid: { display: false } }
+                    }
+                }
             });
         }
 
-        function finishSession() {
-            // Animation confetti ou simple alerte
-            const btn = document.querySelector('button[onclick="finishSession()"]');
-            btn.innerText = "Bien joué ! ✅";
-            btn.classList.replace('bg-[#A8B794]', 'bg-gray-800');
-            
-            setTimeout(() => {
-                document.getElementById('workout-container').classList.add('hidden');
-                document.getElementById('empty-state').classList.remove('hidden');
-                document.querySelectorAll('.btn-workout').forEach(b => b.classList.remove('active'));
-                btn.innerText = "TERMINER LA SÉANCE 🎉";
-                btn.classList.replace('bg-gray-800', 'bg-[#A8B794]');
-            }, 1500);
+        // --- LOGIC: INSTAGRAM ---
+        function renderInsta() {
+            const list = document.getElementById('insta-list');
+            list.innerHTML = db[user].insta.map((item, i) => `
+                <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 group">
+                    <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleInsta(${i})" class="w-5 h-5 accent-[#4A5D3F]">
+                    <span class="flex-1 text-sm font-medium ${item.done ? 'line-through text-gray-300' : ''}">${item.txt}</span>
+                    <button onclick="delInsta(${i})" class="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('');
+            document.getElementById('ideas-count').innerText = db[user].insta.filter(x => !x.done).length;
         }
 
-        // Init
-        renderMenu();
+        function addInstaIdea() {
+            const txt = document.getElementById('insta-input').value;
+            if(txt) {
+                db[user].insta.unshift({ txt, done: false });
+                document.getElementById('insta-input').value = '';
+                saveData();
+                renderInsta();
+            }
+        }
+        function toggleInsta(i) { db[user].insta[i].done = !db[user].insta[i].done; saveData(); renderInsta(); }
+        function delInsta(i) { db[user].insta.splice(i, 1); saveData(); renderInsta(); }
+
+        // INIT
+        renderHome();
+        
+        // Initialiser Chart avec une valeur par défaut
+        setTimeout(() => { if(document.getElementById('view-stats').classList.contains('active')) updateChart(); }, 500);
 
     </script>
 </body>

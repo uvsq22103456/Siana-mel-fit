@@ -2,552 +2,156 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>FITNESS DUO</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Siana & Mel • Flow</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #fff1f2;
-            --card: #ffffff;
-            --text: #4a044e;
-            --primary: #ec4899; /* Pink 500 */
-            --primary-soft: #fbcfe8; /* Pink 200 */
-            --nav-active: #db2777;
+            --bg: #F2F4F1; /* Matcha Milk */
+            --card: rgba(255, 255, 255, 0.7);
+            --text: #374151;
+            --accent: #8FA887; /* Matcha Green */
+            --accent-soft: #DDE5DB;
         }
-
-        body.theme-mel { --primary: #8b5cf6; --primary-soft: #ddd6fe; --nav-active: #7c3aed; --bg: #f5f3ff; }
 
         body { 
             font-family: 'Outfit', sans-serif; 
             background-color: var(--bg); 
-            color: var(--text); 
-            height: 100dvh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            transition: background 0.3s;
+            color: var(--text);
+            height: 100dvh;
+            overflow: hidden;
         }
 
-        .safe-pt { padding-top: max(env(safe-area-inset-top), 20px); }
-        .safe-pb { padding-bottom: max(env(safe-area-inset-bottom), 90px); }
-
-        .card {
+        /* Glassmorphism Soft */
+        .glass-card {
             background: var(--card);
-            border-radius: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 32px;
+            box-shadow: 0 8px 32px rgba(143, 168, 135, 0.1);
         }
 
-        /* CALENDRIER RAFFINÉ */
-        .cal-day {
-            aspect-ratio: 1/1.2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 14px;
-            transition: all 0.2s;
-            font-size: 13px;
-            color: #9ca3af;
-            font-weight: 600;
-        }
-        .cal-day.active {
-            background: var(--primary);
+        .btn-action {
+            background: #2D302E;
             color: white;
-            box-shadow: 0 4px 12px -2px var(--primary);
-            font-weight: 800;
+            border-radius: 20px;
+            transition: transform 0.1s;
         }
-        .cal-dot { width: 4px; height: 4px; background: var(--primary); border-radius: 50%; margin-top: 4px; }
-        .active .cal-dot { background: white; }
+        .btn-action:active { transform: scale(0.98); }
 
-        /* NAVIGATION */
-        .nav-bar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid #f3f4f6; }
-        .nav-item { opacity: 0.4; transition: 0.3s; }
-        .nav-item.active { opacity: 1; color: var(--nav-active); transform: translateY(-2px); }
-
-        /* INPUTS */
-        input:focus { outline: 2px solid var(--primary-soft); }
-        
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="theme-siana">
+<body class="flex flex-col p-6 safe-pb">
 
-    <header class="safe-pt px-6 pb-2 flex justify-between items-center z-20">
-        <div class="bg-white p-1 rounded-full shadow-sm flex">
-            <button onclick="switchUser('siana')" id="btn-siana" class="px-4 py-2 rounded-full text-[10px] font-black uppercase transition bg-pink-500 text-white shadow">Siana</button>
-            <button onclick="switchUser('mel')" id="btn-mel" class="px-4 py-2 rounded-full text-[10px] font-black uppercase transition text-gray-400">Mel</button>
+    <header class="flex justify-between items-center mb-6 pt-4">
+        <div>
+            <h1 class="text-2xl font-medium tracking-tight text-gray-800">Hello <span class="text-[#8FA887]">Siana</span>,</h1>
+            <p class="text-xs text-gray-400 font-medium uppercase tracking-widest mt-1">Mardi • Phase Folliculaire 🌸</p>
         </div>
-        <div class="text-[10px] font-black uppercase tracking-widest opacity-40" id="header-date">...</div>
+        <div class="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100">
+            <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
+        </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto relative">
+    <main class="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar pb-20">
         
-        <section id="view-dash" class="p-5 space-y-4 fade-in">
-            <div class="card p-5">
-                <div class="flex justify-between items-center mb-2 px-1">
-                    <button onclick="changeWeek(-1)" class="text-gray-400 p-2 text-xl">←</button>
-                    <div class="flex flex-col items-center">
-                        <span id="month-label" class="text-xs font-black uppercase tracking-widest">FÉVRIER</span>
-                    </div>
-                    <button onclick="changeWeek(1)" class="text-gray-400 p-2 text-xl">→</button>
-                </div>
-
-                <button onclick="copyEntireWeek()" class="w-full mb-4 py-2 bg-gray-50 hover:bg-pink-50 text-gray-400 hover:text-pink-500 rounded-lg text-[10px] font-bold uppercase transition flex items-center justify-center gap-2">
-                    <span>↺</span> Copier la semaine précédente ici
-                </button>
-
-                <div id="calendar-grid" class="grid grid-cols-7 gap-2 mb-4"></div>
-                
-                <div class="border-t border-gray-100 pt-3 flex justify-between items-end">
-                    <div>
-                        <div class="text-[9px] font-bold text-gray-400 uppercase">Ce jour</div>
-                        <div id="plan-dash" class="text-xl font-black text-gray-800">Repos</div>
-                    </div>
-                    <button onclick="nav('sport')" class="bg-gray-100 hover:bg-gray-200 text-xs font-black px-4 py-2 rounded-xl transition">Détails ></button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div class="card p-4 flex flex-col justify-between h-28">
-                    <span class="text-[9px] font-black uppercase text-gray-400">Sommeil 🌙</span>
-                    <div class="flex justify-center items-baseline gap-1">
-                        <span id="val-sleep" class="text-2xl font-black text-indigo-900">--</span>
-                        <span class="text-xs font-bold text-gray-400">h</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <input type="time" id="sleep-start" onchange="saveSleep()" class="bg-gray-50 rounded w-16 text-[9px] text-center">
-                        <input type="time" id="sleep-end" onchange="saveSleep()" class="bg-gray-50 rounded w-16 text-[9px] text-center">
-                    </div>
-                </div>
-                <div class="card p-4 flex flex-col justify-between h-28">
-                    <span class="text-[9px] font-black uppercase text-gray-400">Eau 💧</span>
-                    <div class="flex justify-center items-baseline gap-1">
-                        <span id="val-water" class="text-3xl font-black text-blue-500">0</span>
-                    </div>
-                    <div class="flex justify-center gap-3">
-                        <button onclick="updWater(-1)" class="w-6 h-6 rounded-full bg-gray-100 font-bold text-gray-400">-</button>
-                        <button onclick="updWater(1)" class="w-6 h-6 rounded-full bg-blue-400 text-white shadow-md font-bold">+</button>
-                    </div>
-                </div>
-            </div>
+        <div class="glass-card p-6 relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-[#8FA887]/20 rounded-full blur-3xl"></div>
             
-            <div class="card p-4 flex items-center justify-between">
-                <span class="text-[9px] font-black uppercase text-gray-400">Activité 👣</span>
-                <input type="number" id="val-steps" onchange="saveSteps()" placeholder="0" class="text-right font-black text-xl w-32 bg-transparent outline-none">
-            </div>
-            <div class="h-20"></div>
-        </section>
-
-        <section id="view-sport" class="p-5 space-y-4 hidden fade-in">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-black uppercase">Séance du <span id="sport-date-lbl" class="text-pink-500">...</span></h2>
-            </div>
-
-            <div class="card p-4">
-                <label class="text-[9px] font-black uppercase text-gray-400">Nom de la séance</label>
-                <input type="text" id="input-plan-name" onchange="savePlanName()" placeholder="Ex: Leg Day, Cardio..." class="w-full text-xl font-black bg-transparent mt-1 outline-none text-gray-800">
-                <div class="flex gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar">
-                    <button onclick="setPlanName('LEG DAY')" class="whitespace-nowrap bg-pink-50 text-pink-600 px-3 py-1 rounded-lg text-[9px] font-bold">LEG DAY</button>
-                    <button onclick="setPlanName('UPPER')" class="whitespace-nowrap bg-purple-50 text-purple-600 px-3 py-1 rounded-lg text-[9px] font-bold">UPPER</button>
-                    <button onclick="setPlanName('CARDIO')" class="whitespace-nowrap bg-orange-50 text-orange-600 px-3 py-1 rounded-lg text-[9px] font-bold">CARDIO</button>
-                    <button onclick="setPlanName('REPOS')" class="whitespace-nowrap bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-[9px] font-bold">REPOS</button>
-                </div>
-            </div>
-
-            <div id="list-sport" class="space-y-3 pb-6"></div>
-
-            <button onclick="openExoModal()" class="w-full py-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 font-bold uppercase text-xs hover:border-pink-300 hover:text-pink-500 transition">
-                + Ajouter un exercice
-            </button>
-            <div class="h-24"></div>
-        </section>
-
-        <section id="view-nutri" class="p-5 space-y-4 hidden fade-in">
-            <h2 class="text-lg font-black uppercase">Repas</h2>
-            <div class="card p-4 space-y-3">
-                <input type="text" id="food-name" placeholder="Qu'as-tu mangé ?" class="w-full font-bold bg-gray-50 p-3 rounded-xl">
-                <div class="flex gap-2">
-                    <input type="number" id="food-cal" placeholder="Kcal" class="w-1/2 font-bold bg-gray-50 p-3 rounded-xl text-center">
-                    <input type="number" id="food-prot" placeholder="Prot (g)" class="w-1/2 font-bold bg-gray-50 p-3 rounded-xl text-center">
-                </div>
-                <button onclick="addFood()" class="w-full bg-emerald-400 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg shadow-emerald-200">Ajouter</button>
-            </div>
-            <div id="list-food" class="space-y-2"></div>
-            <div class="h-24"></div>
-        </section>
-
-        <section id="view-body" class="p-5 space-y-4 hidden fade-in">
-            <h2 class="text-lg font-black uppercase">Mensurations</h2>
-            <div class="card p-5 space-y-4">
+            <div class="flex justify-between items-start relative z-10">
                 <div>
-                    <label class="text-[9px] font-black uppercase text-gray-400">Poids (kg)</label>
-                    <input type="number" id="body-w" class="w-full text-3xl font-black border-b border-gray-100 pb-2 outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[9px] font-black uppercase text-gray-400">Taille (cm)</label>
-                        <input type="number" id="body-waist" class="w-full font-bold bg-gray-50 p-2 rounded-lg mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-black uppercase text-gray-400">Hanches (cm)</label>
-                        <input type="number" id="body-hips" class="w-full font-bold bg-gray-50 p-2 rounded-lg mt-1">
+                    <span class="inline-block px-3 py-1 bg-white/80 rounded-full text-[10px] font-bold uppercase tracking-wider text-[#8FA887] mb-3 shadow-sm">Programme du jour</span>
+                    <h2 class="text-3xl font-light mb-1">Pilates <br><span class="font-medium italic">Sculpt</span></h2>
+                    <div class="flex items-center gap-2 text-gray-500 text-xs font-medium mt-2">
+                        <i data-lucide="clock" class="w-3 h-3"></i> 45 min
+                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                        <i data-lucide="flame" class="w-3 h-3"></i> Burn Focus
                     </div>
                 </div>
-                <button onclick="saveBody()" class="w-full bg-indigo-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-lg shadow-indigo-200">Enregistrer</button>
+                <div class="h-14 w-14 rounded-full bg-[#2D302E] text-white flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition">
+                    <i data-lucide="play" class="w-6 h-6 ml-1"></i>
+                </div>
             </div>
-            <div id="list-body" class="space-y-2"></div>
-            <div class="h-24"></div>
-        </section>
+
+            <div class="mt-6 space-y-3">
+                <div class="flex items-center gap-3 p-3 bg-white/40 rounded-2xl border border-white/50">
+                    <div class="h-8 w-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold shadow-sm">1</div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium">Hundred Beats</p>
+                        <p class="text-[10px] text-gray-400 uppercase">3 séries • 60 sec</p>
+                    </div>
+                    <input type="checkbox" class="w-5 h-5 accent-[#8FA887] rounded-full cursor-pointer">
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-white/40 rounded-2xl border border-white/50">
+                    <div class="h-8 w-8 rounded-full bg-white flex items-center justify-center text-[10px] font-bold shadow-sm">2</div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium">Glute Bridges</p>
+                        <p class="text-[10px] text-gray-400 uppercase">4 séries • 15 reps</p>
+                    </div>
+                    <input type="checkbox" class="w-5 h-5 accent-[#8FA887] rounded-full cursor-pointer">
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card p-5">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase text-gray-400 tracking-wider">Manger pour ton cycle</span>
+                <i data-lucide="sparkles" class="w-3 h-3 text-yellow-500"></i>
+            </div>
+            <div class="flex gap-4">
+                <div class="h-20 w-20 rounded-2xl bg-gray-200 bg-cover bg-center shadow-inner" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop');"></div>
+                <div class="flex-1 flex flex-col justify-center">
+                    <h3 class="font-medium text-lg leading-tight">Bowl Quinoa & Avocat</h3>
+                    <p class="text-xs text-gray-500 mt-1">Riche en magnésium, parfait pour la phase actuelle.</p>
+                </div>
+            </div>
+            <button class="w-full mt-4 py-3 bg-white border border-gray-100 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition">Voir la recette</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="glass-card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-95 transition" onclick="toggleState(this)">
+                <i data-lucide="glass-water" class="w-6 h-6 text-blue-400"></i>
+                <span class="text-[10px] font-bold uppercase text-gray-400">Eau (+25cl)</span>
+            </div>
+            <div class="glass-card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-95 transition" onclick="toggleState(this)">
+                <i data-lucide="moon" class="w-6 h-6 text-indigo-400"></i>
+                <span class="text-[10px] font-bold uppercase text-gray-400">Sommeil (8h)</span>
+            </div>
+        </div>
 
     </main>
 
-    <div id="modal-exo" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <div class="flex justify-between mb-4">
-                <h3 class="font-black uppercase">Nouvel Exercice</h3>
-                <button onclick="document.getElementById('modal-exo').classList.add('hidden')" class="font-bold text-gray-300">✕</button>
-            </div>
-            <input type="text" id="ex-name" placeholder="Nom (ex: Squat, Tapis...)" class="w-full text-lg font-bold border-b border-gray-200 pb-2 mb-4 outline-none">
-            
-            <div class="flex bg-gray-100 p-1 rounded-lg mb-4">
-                <button onclick="setExType('normal')" id="btn-t-normal" class="flex-1 py-2 text-[10px] font-bold rounded bg-white shadow text-pink-500 transition">Normal</button>
-                <button onclick="setExType('prog')" id="btn-t-prog" class="flex-1 py-2 text-[10px] font-bold rounded text-gray-400 transition">Prog</button>
-                <button onclick="setExType('cardio')" id="btn-t-cardio" class="flex-1 py-2 text-[10px] font-bold rounded text-gray-400 transition">Cardio</button>
-            </div>
-
-            <div id="block-sets" class="grid grid-cols-2 gap-3 mb-4">
-                <input type="number" id="ex-sets" placeholder="Séries" class="bg-gray-50 p-2 rounded font-bold text-center">
-                <input type="number" id="ex-reps" placeholder="Reps" class="bg-gray-50 p-2 rounded font-bold text-center">
-            </div>
-
-            <div id="w-normal">
-                <input type="number" id="ex-w1" placeholder="Poids (kg)" class="w-full bg-pink-50 p-3 rounded-xl text-center font-black text-pink-600 text-xl">
-            </div>
-            <div id="w-prog" class="hidden grid grid-cols-[1fr_20px_1fr] gap-1 items-center">
-                <input type="number" id="ex-start" placeholder="Début" class="bg-pink-50 p-3 rounded-xl text-center font-bold text-pink-600">
-                <span class="text-center font-bold text-gray-300">➔</span>
-                <input type="number" id="ex-end" placeholder="Fin" class="bg-pink-50 p-3 rounded-xl text-center font-bold text-pink-600">
-            </div>
-            <div id="w-cardio" class="hidden grid grid-cols-2 gap-3">
-                <input type="number" id="ex-time" placeholder="Temps (min)" class="bg-orange-50 p-3 rounded-xl text-center font-bold text-orange-600">
-                <input type="number" id="ex-dist" placeholder="Dist (km)" class="bg-orange-50 p-3 rounded-xl text-center font-bold text-orange-600">
-            </div>
-
-            <button onclick="addExo()" class="w-full bg-pink-500 text-white py-4 rounded-xl font-black uppercase text-xs mt-6 shadow-lg">Valider</button>
-        </div>
-    </div>
-
-    <nav class="nav-bar fixed bottom-0 w-full safe-pb z-40">
-        <div class="grid grid-cols-4 py-3">
-            <button onclick="nav('dash')" id="nav-dash" class="nav-item active flex flex-col items-center">
-                <span class="text-xl mb-0.5">📅</span>
-                <span class="text-[9px] font-black uppercase">Dash</span>
-            </button>
-            <button onclick="nav('sport')" id="nav-sport" class="nav-item flex flex-col items-center">
-                <span class="text-xl mb-0.5">💪</span>
-                <span class="text-[9px] font-black uppercase">Sport</span>
-            </button>
-            <button onclick="nav('nutri')" id="nav-nutri" class="nav-item flex flex-col items-center">
-                <span class="text-xl mb-0.5">🥗</span>
-                <span class="text-[9px] font-black uppercase">Nutri</span>
-            </button>
-            <button onclick="nav('body')" id="nav-body" class="nav-item flex flex-col items-center">
-                <span class="text-xl mb-0.5">📏</span>
-                <span class="text-[9px] font-black uppercase">Body</span>
-            </button>
-        </div>
+    <nav class="fixed bottom-6 left-6 right-6 bg-[#2D302E] text-white rounded-[32px] p-2 shadow-2xl shadow-gray-400/50 z-50 flex justify-between items-center px-6 backdrop-blur-xl">
+        <button class="p-3 bg-white/10 rounded-full text-[#8FA887]"><i data-lucide="home" class="w-5 h-5"></i></button>
+        <button class="p-3 opacity-50 hover:opacity-100"><i data-lucide="calendar-heart" class="w-5 h-5"></i></button>
+        <button class="p-3 opacity-50 hover:opacity-100"><i data-lucide="shopping-bag" class="w-5 h-5"></i></button>
+        <button class="p-3 opacity-50 hover:opacity-100"><i data-lucide="settings-2" class="w-5 h-5"></i></button>
     </nav>
 
     <script>
-        // CONFIG
-        let user = 'siana';
-        let viewDate = new Date();
-        let selDate = new Date().toISOString().split('T')[0];
-        let exType = 'normal';
+        lucide.createIcons();
 
-        // INIT DB
-        let db = JSON.parse(localStorage.getItem('fit_final_v4')) || {
-            siana: { plan:{}, sleep:{}, water:{}, steps:{}, workouts:{}, food:[], body:[] },
-            mel: { plan:{}, sleep:{}, water:{}, steps:{}, workouts:{}, food:[], body:[] }
+        // SIMULATION D'AUTOMATISATION
+        // Dans la vraie vie, tu mettrais ici un tableau avec tous leurs entrainements pré-écrits
+        const workouts = {
+            'Lundi': { title: 'Lower Body', type: 'Gym' },
+            'Mardi': { title: 'Pilates Sculpt', type: 'Mat' },
+            'Mercredi': { title: 'Rest & Stretch', type: 'Yoga' }
         };
-
-        // INIT
-        function init() {
-            // Lundi de cette semaine
-            const d = new Date(viewDate);
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day == 0 ? -6 : 1);
-            viewDate.setDate(diff);
-            
-            // Si on charge pour la première fois, on prend la date d'aujourd'hui
-            selDate = new Date().toISOString().split('T')[0];
-            switchUser(user);
-        }
-
-        function save() { localStorage.setItem('fit_final_v4', JSON.stringify(db)); render(); }
-
-        // NAVIGATION
-        function nav(view) {
-            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
-            document.getElementById('view-' + view).classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('nav-' + view).classList.add('active');
-            render(); // Refresh data in view
-        }
-
-        function switchUser(u) {
-            user = u;
-            document.body.className = u === 'siana' ? 'theme-siana' : 'theme-mel';
-            document.getElementById('btn-siana').className = u==='siana' ? "px-4 py-2 rounded-full text-[10px] font-black uppercase transition bg-pink-500 text-white shadow" : "px-4 py-2 rounded-full text-[10px] font-black uppercase transition text-gray-400";
-            document.getElementById('btn-mel').className = u==='mel' ? "px-4 py-2 rounded-full text-[10px] font-black uppercase transition bg-purple-500 text-white shadow" : "px-4 py-2 rounded-full text-[10px] font-black uppercase transition text-gray-400";
-            document.documentElement.style.setProperty('--primary', u==='siana'?'#ec4899':'#8b5cf6');
-            document.documentElement.style.setProperty('--primary-soft', u==='siana'?'#fbcfe8':'#ddd6fe');
-            render();
-        }
-
-        function changeWeek(dir) {
-            viewDate.setDate(viewDate.getDate() + (dir * 7));
-            render();
-        }
-
-        // RENDER LOGIC
-        function render() {
-            const ud = db[user];
-            
-            // Header
-            const now = new Date();
-            document.getElementById('header-date').innerText = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
-
-            // Calendar Grid
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
-            document.getElementById('month-label').innerText = viewDate.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
-
-            let tempD = new Date(viewDate);
-            for(let i=0; i<7; i++) {
-                const iso = tempD.toISOString().split('T')[0];
-                const dayNum = tempD.getDate();
-                const dayName = tempD.toLocaleDateString('fr-FR', {weekday:'short'}).replace('.','');
-                const isSel = iso === selDate;
-                const hasData = ud.plan[iso] || (ud.workouts[iso] && ud.workouts[iso].length > 0);
-
-                grid.innerHTML += `
-                    <div onclick="selDate='${iso}'; render()" class="cal-day cursor-pointer ${isSel ? 'active' : ''} ${hasData && !isSel ? 'bg-white' : ''}">
-                        <span class="uppercase text-[10px] opacity-60 mb-0.5">${dayName}</span>
-                        <span class="text-base">${dayNum}</span>
-                        ${hasData ? `<div class="cal-dot"></div>` : ''}
-                    </div>`;
-                tempD.setDate(tempD.getDate()+1);
-            }
-
-            // Dash Data
-            const planTxt = ud.plan[selDate] || "Rien de prévu";
-            document.getElementById('plan-dash').innerText = planTxt;
-            
-            const slp = ud.sleep[selDate] || {};
-            document.getElementById('sleep-start').value = slp.start || "";
-            document.getElementById('sleep-end').value = slp.end || "";
-            document.getElementById('val-sleep').innerText = slp.total || "--";
-            
-            document.getElementById('val-water').innerText = ud.water[selDate] || 0;
-            document.getElementById('val-steps').value = ud.steps[selDate] || "";
-
-            // Sport View Data
-            document.getElementById('sport-date-lbl').innerText = new Date(selDate).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
-            document.getElementById('input-plan-name').value = ud.plan[selDate] || "";
-            
-            const listS = document.getElementById('list-sport');
-            const exos = ud.workouts[selDate] || [];
-            if(exos.length === 0) listS.innerHTML = `<div class="text-center py-6 opacity-30 text-xs font-bold uppercase">Aucun exercice</div>`;
-            else {
-                listS.innerHTML = exos.map((ex, idx) => {
-                    let leftInfo = `${ex.sets} séries x ${ex.reps}`;
-                    let rightInfo = '';
-                    let colorClass = 'text-pink-500';
-
-                    if(ex.type === 'normal') rightInfo = ex.w1 + 'kg';
-                    else if(ex.type === 'prog') rightInfo = ex.start + '➔' + ex.end + 'kg';
-                    else {
-                        // Cardio logic
-                        leftInfo = "Cardio";
-                        rightInfo = `${ex.time} min ${ex.dist ? '• ' + ex.dist + 'km' : ''}`;
-                        colorClass = 'text-orange-500';
-                    }
-
-                    return `
-                    <div class="card p-3 flex justify-between items-center relative group">
-                        <div>
-                            <div class="text-[9px] font-black uppercase text-gray-400">${leftInfo}</div>
-                            <div class="font-bold text-gray-800 uppercase">${ex.name}</div>
-                        </div>
-                        <div class="font-black text-lg ${colorClass}">
-                            ${rightInfo}
-                        </div>
-                        <button onclick="delExo(${idx})" class="absolute right-0 top-0 h-full w-12 bg-red-500 text-white rounded-r-2xl hidden group-hover:flex items-center justify-center font-bold">X</button>
-                    </div>
-                `;}).join('');
-            }
-
-            // Nutri View Data
-            const listF = document.getElementById('list-food');
-            const foods = ud.food.filter(f => f.d === selDate);
-            listF.innerHTML = foods.map((f, idx) => `
-                <div class="card p-3 flex justify-between items-center text-xs">
-                    <span class="font-bold uppercase">${f.n}</span>
-                    <div class="text-right">
-                        <div class="font-black">${f.k} kcal</div>
-                        <div class="text-emerald-500 font-bold">${f.p}g prot</div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Body View Data
-            const listB = document.getElementById('list-body');
-            listB.innerHTML = ud.body.slice(0,5).map(b => `
-                <div class="card p-3 text-xs flex justify-between">
-                    <span class="font-bold text-gray-400">${b.d}</span>
-                    <span class="font-black">${b.w} kg</span>
-                    <span>${b.waist || '-'} / ${b.hips || '-'} cm</span>
-                </div>
-            `).join('');
-        }
-
-        // --- ACTIONS ---
-
-        // COPIER TOUTE LA SEMAINE
-        function copyEntireWeek() {
-            let targetMonday = new Date(viewDate);
-            let sourceMonday = new Date(targetMonday);
-            sourceMonday.setDate(sourceMonday.getDate() - 7);
-
-            if(!confirm("Copier tout le programme de la semaine dernière sur celle-ci ?")) return;
-
-            for(let i=0; i<7; i++) {
-                let tDate = new Date(targetMonday); tDate.setDate(tDate.getDate() + i);
-                let sDate = new Date(sourceMonday); sDate.setDate(sDate.getDate() + i);
-                let tIso = tDate.toISOString().split('T')[0];
-                let sIso = sDate.toISOString().split('T')[0];
-
-                if(db[user].plan[sIso]) db[user].plan[tIso] = db[user].plan[sIso];
-                if(db[user].workouts[sIso]) db[user].workouts[tIso] = JSON.parse(JSON.stringify(db[user].workouts[sIso]));
-            }
-            save();
-            alert("Planning copié ! 🔥");
-        }
-
-        // Dash
-        function saveSleep() {
-            const s = document.getElementById('sleep-start').value;
-            const e = document.getElementById('sleep-end').value;
-            if(s && e) {
-                let d1 = new Date("2000-01-01 "+s);
-                let d2 = new Date("2000-01-01 "+e);
-                if(d2 < d1) d2.setDate(d2.getDate()+1);
-                const diff = (d2-d1)/1000/60/60;
-                const h = Math.floor(diff);
-                const m = Math.round((diff-h)*60);
-                db[user].sleep[selDate] = { start:s, end:e, total: `${h}h${m<10?'0':''}${m}` };
-                save();
-            }
-        }
-        function updWater(v) { let c = db[user].water[selDate]||0; c+=v; if(c<0)c=0; db[user].water[selDate]=c; save(); }
-        function saveSteps() { db[user].steps[selDate] = document.getElementById('val-steps').value; save(); }
-
-        // Sport
-        function savePlanName() { db[user].plan[selDate] = document.getElementById('input-plan-name').value; save(); }
-        function setPlanName(n) { document.getElementById('input-plan-name').value = n; savePlanName(); }
         
-        function openExoModal() { document.getElementById('modal-exo').classList.remove('hidden'); }
-        function setExType(t) {
-            exType = t;
-            // Buttons
-            const n = document.getElementById('btn-t-normal');
-            const p = document.getElementById('btn-t-prog');
-            const c = document.getElementById('btn-t-cardio');
-            
-            // Reset base styles
-            const inactive = "flex-1 py-2 text-[10px] font-bold rounded text-gray-400 transition";
-            const active = "flex-1 py-2 text-[10px] font-bold rounded bg-white shadow text-pink-500 transition";
-
-            n.className = t==='normal' ? active : inactive;
-            p.className = t==='prog' ? active : inactive;
-            c.className = t==='cardio' ? active : inactive;
-
-            // Inputs visibility
-            const divN = document.getElementById('w-normal');
-            const divP = document.getElementById('w-prog');
-            const divC = document.getElementById('w-cardio');
-            const divSets = document.getElementById('block-sets');
-
-            divN.classList.add('hidden');
-            divP.classList.add('hidden');
-            divC.classList.add('hidden');
-            divSets.classList.remove('hidden'); // Show sets/reps by default
-
-            if(t==='normal') divN.classList.remove('hidden');
-            else if(t==='prog') divP.classList.remove('hidden');
-            else {
-                divC.classList.remove('hidden');
-                divSets.classList.add('hidden'); // Hide sets/reps for cardio
-            }
+        // Petit effet quand on clique sur l'eau
+        function toggleState(el) {
+            el.style.background = "rgba(255,255,255,0.9)";
+            setTimeout(() => {
+                el.style.background = "var(--card)";
+            }, 200);
         }
-
-        function addExo() {
-            const name = document.getElementById('ex-name').value;
-            if(!name) return;
-            const sets = document.getElementById('ex-sets').value;
-            const reps = document.getElementById('ex-reps').value;
-            
-            let data = { name, sets, reps, type: exType };
-            
-            if(exType==='normal') data.w1 = document.getElementById('ex-w1').value;
-            else if(exType==='prog') { 
-                data.start = document.getElementById('ex-start').value; 
-                data.end = document.getElementById('ex-end').value; 
-            } else {
-                data.time = document.getElementById('ex-time').value;
-                data.dist = document.getElementById('ex-dist').value;
-            }
-            
-            if(!db[user].workouts[selDate]) db[user].workouts[selDate] = [];
-            db[user].workouts[selDate].push(data);
-            
-            document.getElementById('ex-name').value = '';
-            document.getElementById('modal-exo').classList.add('hidden');
-            save();
-        }
-        function delExo(i) { if(confirm('Supprimer ?')) { db[user].workouts[selDate].splice(i,1); save(); } }
-        
-        // Nutri
-        function addFood() {
-            const n = document.getElementById('food-name').value;
-            const k = document.getElementById('food-cal').value || 0;
-            const p = document.getElementById('food-prot').value || 0;
-            if(n) {
-                db[user].food.unshift({ n, k, p, d: selDate });
-                document.getElementById('food-name').value='';
-                save();
-            }
-        }
-
-        // Body
-        function saveBody() {
-            const w = document.getElementById('body-w').value;
-            const waist = document.getElementById('body-waist').value;
-            const hips = document.getElementById('body-hips').value;
-            if(w) {
-                db[user].body.unshift({ w, waist, hips, d: selDate });
-                save();
-            }
-        }
-
-        init();
     </script>
 </body>
 </html>
